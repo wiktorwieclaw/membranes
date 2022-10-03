@@ -1,0 +1,8 @@
+# Seeds for failure cases proptest has generated in the past. It is
+# automatically read and these particular cases re-run before any
+# novel cases are generated.
+#
+# It is recommended to check this file in to source control so that
+# everyone who runs the test benefits from these saved cases.
+cc d8aa89c3c6e64da988aea80d11e02273221207a36a7348bb6080ec6a8babf8d1 # shrinks to input = _LdaLoadsAndSetsNegativeFlagArgs { value: 128 }
+cc 50615c61fcfd5c8f6249e4a44669582fb79dd3a3f42a920c46fac38b69f70452 # shrinks to input = _LdaSetsRegisterAArgs { registers: Registers { a: 0, x: 0, y: 0, program_counter: 0, stack_pointer: 0, status_flags: ZERO }, value: 1 }
