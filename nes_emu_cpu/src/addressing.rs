@@ -1,7 +1,7 @@
+use nes_emu_bits::WrappingU8Ext;
 use std::num::Wrapping;
 
 use super::{Bus, Registers};
-use crate::util::WrappingU8Ext;
 
 pub fn operand_immediate(registers: &mut Registers) -> Wrapping<u16> {
     let data = registers.program_counter;

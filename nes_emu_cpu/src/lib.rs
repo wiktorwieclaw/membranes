@@ -1,15 +1,11 @@
 use bitflags::bitflags;
-#[cfg(test)]
-use proptest_derive::Arbitrary;
+use nes_emu_bits::{WrappingU16Ext, WrappingU8Ext};
 use std::{num::Wrapping, ops::IndexMut};
-
-use crate::util::{WrappingU16Ext, WrappingU8Ext};
 
 mod addressing;
 mod instruction;
 
-#[derive(Default, Debug, PartialEq, Eq, Clone)]
-#[cfg_attr(test, derive(Arbitrary))]
+#[derive(Default, Debug, PartialEq, Eq, Clone, Copy)]
 pub struct Registers {
     pub a: Wrapping<u8>,
     pub x: Wrapping<u8>,
@@ -21,7 +17,6 @@ pub struct Registers {
 
 bitflags! {
     #[derive(Default)]
-    #[cfg_attr(test, derive(Arbitrary))]
     pub struct StatusFlags: u8 {
         const CARRY = 0b0000_0001;
         const ZERO = 0b0000_0010;
@@ -76,8 +71,16 @@ impl Cpu {
         Self::default()
     }
 
-    pub fn execute_next(&mut self, memory: &mut impl Bus) {
-        let opcode = memory.read_u8(self.registers.program_counter);
+    pub fn with_regs(self, registers: Registers) -> Self {
+        Self { registers }
+    }
+
+    pub fn regs(&self) -> Registers {
+        self.registers
+    }
+
+    pub fn execute_next(&mut self, bus: &mut impl Bus) {
+        let opcode = bus.read_u8(self.registers.program_counter);
         self.registers.program_counter += 1;
 
         let registers = &mut self.registers;
@@ -85,42 +88,42 @@ impl Cpu {
             // LDA Immediate
             0xA9 => {
                 let operand = addressing::operand_immediate(registers);
-                instruction::lda::lda(operand, registers, memory);
+                instruction::lda::lda(operand, registers, bus);
             }
             // LDA Zero Page
             0xA5 => {
-                let operand = addressing::operand_zero_page(registers, memory);
-                instruction::lda::lda(operand, registers, memory);
+                let operand = addressing::operand_zero_page(registers, bus);
+                instruction::lda::lda(operand, registers, bus);
             }
             // LDA Zero Page,X
             0xB5 => {
-                let operand = addressing::operand_zero_page_x(registers, memory);
-                instruction::lda::lda(operand, registers, memory);
+                let operand = addressing::operand_zero_page_x(registers, bus);
+                instruction::lda::lda(operand, registers, bus);
             }
             // LDA Absolute
             0xAD => {
-                let operand = addressing::operand_absolute(registers, memory);
-                instruction::lda::lda(operand, registers, memory);
+                let operand = addressing::operand_absolute(registers, bus);
+                instruction::lda::lda(operand, registers, bus);
             }
             // LDA Absolute,X
             0xBD => {
-                let operand = addressing::operand_absolute_x(registers, memory);
-                instruction::lda::lda(operand, registers, memory);
+                let operand = addressing::operand_absolute_x(registers, bus);
+                instruction::lda::lda(operand, registers, bus);
             }
             // LDA Absolute,Y
             0xB9 => {
-                let operand = addressing::operand_absolute_y(registers, memory);
-                instruction::lda::lda(operand, registers, memory);
+                let operand = addressing::operand_absolute_y(registers, bus);
+                instruction::lda::lda(operand, registers, bus);
             }
             // LDA Indirect,X
             0xA1 => {
                 let operand = todo!();
-                instruction::lda::lda(operand, registers, memory);
+                instruction::lda::lda(operand, registers, bus);
             }
             // LDA Indirect,Y
             0xB1 => {
                 let operand = todo!();
-                instruction::lda::lda(operand, registers, memory);
+                instruction::lda::lda(operand, registers, bus);
             }
             _ => todo!(),
         };
