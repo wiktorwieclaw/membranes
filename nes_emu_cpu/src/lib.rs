@@ -88,42 +88,42 @@ impl Cpu {
             // LDA Immediate
             0xA9 => {
                 let operand = addressing::operand_immediate(registers);
-                instruction::lda::lda(operand, registers, bus);
+                instruction::lda(operand, registers, bus);
             }
             // LDA Zero Page
             0xA5 => {
                 let operand = addressing::operand_zero_page(registers, bus);
-                instruction::lda::lda(operand, registers, bus);
+                instruction::lda(operand, registers, bus);
             }
             // LDA Zero Page,X
             0xB5 => {
                 let operand = addressing::operand_zero_page_x(registers, bus);
-                instruction::lda::lda(operand, registers, bus);
+                instruction::lda(operand, registers, bus);
             }
             // LDA Absolute
             0xAD => {
                 let operand = addressing::operand_absolute(registers, bus);
-                instruction::lda::lda(operand, registers, bus);
+                instruction::lda(operand, registers, bus);
             }
             // LDA Absolute,X
             0xBD => {
                 let operand = addressing::operand_absolute_x(registers, bus);
-                instruction::lda::lda(operand, registers, bus);
+                instruction::lda(operand, registers, bus);
             }
             // LDA Absolute,Y
             0xB9 => {
                 let operand = addressing::operand_absolute_y(registers, bus);
-                instruction::lda::lda(operand, registers, bus);
+                instruction::lda(operand, registers, bus);
             }
             // LDA Indirect,X
             0xA1 => {
                 let operand = todo!();
-                instruction::lda::lda(operand, registers, bus);
+                instruction::lda(operand, registers, bus);
             }
             // LDA Indirect,Y
             0xB1 => {
                 let operand = todo!();
-                instruction::lda::lda(operand, registers, bus);
+                instruction::lda(operand, registers, bus);
             }
             _ => todo!(),
         };
