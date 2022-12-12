@@ -4,6 +4,7 @@ use std::{num::Wrapping, ops::IndexMut};
 
 mod addressing;
 mod instruction;
+mod opcode;
 
 #[derive(Default, Debug, PartialEq, Eq, Clone, Copy)]
 pub struct Registers {
@@ -85,43 +86,35 @@ impl Cpu {
 
         let registers = &mut self.registers;
         match opcode.0 {
-            // LDA Immediate
-            0xA9 => {
+            opcode::LDA_IMMEDIATE => {
                 let operand = addressing::operand_immediate(registers);
                 instruction::lda(operand, registers, bus);
             }
-            // LDA Zero Page
-            0xA5 => {
+            opcode::LDA_ZERO_PAGE => {
                 let operand = addressing::operand_zero_page(registers, bus);
                 instruction::lda(operand, registers, bus);
             }
-            // LDA Zero Page,X
-            0xB5 => {
+            opcode::LDA_ZERO_PAGE_X => {
                 let operand = addressing::operand_zero_page_x(registers, bus);
                 instruction::lda(operand, registers, bus);
             }
-            // LDA Absolute
-            0xAD => {
+            opcode::LDA_ABSOLUTE => {
                 let operand = addressing::operand_absolute(registers, bus);
                 instruction::lda(operand, registers, bus);
             }
-            // LDA Absolute,X
-            0xBD => {
+            opcode::LDA_ABSOLUTE_X => {
                 let operand = addressing::operand_absolute_x(registers, bus);
                 instruction::lda(operand, registers, bus);
             }
-            // LDA Absolute,Y
-            0xB9 => {
+            opcode::LDA_ABSOLUTE_Y => {
                 let operand = addressing::operand_absolute_y(registers, bus);
                 instruction::lda(operand, registers, bus);
             }
-            // LDA Indirect,X
-            0xA1 => {
+            opcode::LDA_INDIRECT_X => {
                 let operand = todo!();
                 instruction::lda(operand, registers, bus);
             }
-            // LDA Indirect,Y
-            0xB1 => {
+            opcode::LDA_INDIRECT_Y => {
                 let operand = todo!();
                 instruction::lda(operand, registers, bus);
             }
