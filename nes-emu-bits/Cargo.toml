@@ -1,10 +1,8 @@
 [package]
-name = "nes_emu"
+name = "nes-emu-bits"
 version = "0.1.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-nes_emu_bus = { path = "../nes_emu_bus" }
-nes_emu_cpu = { path = "../nes_emu_cpu" }

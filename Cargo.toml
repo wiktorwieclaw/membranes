@@ -1,8 +1,8 @@
 [workspace]
 members = [
-    "nes_emu",
-    "nes_emu_bits",
-    "nes_emu_bus",
-    "nes_emu_cpu",
-    "nes_emu_joypad",
+    "nes-emu",
+    "nes-emu-bits",
+    "nes-emu-bus",
+    "nes-emu-cpu",
+    "nes-emu-joypad",
 ]
