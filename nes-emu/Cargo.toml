@@ -6,5 +6,6 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-nes-emu-bus = { path = "../nes-emu-bus" }
 nes-emu-cpu = { path = "../nes-emu-cpu" }
+nes-emu-joypad = { path = "../nes-emu-joypad" }
+nes-emu-bits = { path = "../nes-emu-bits" }

@@ -2,7 +2,6 @@
 members = [
     "nes-emu",
     "nes-emu-bits",
-    "nes-emu-bus",
     "nes-emu-cpu",
     "nes-emu-joypad",
 ]

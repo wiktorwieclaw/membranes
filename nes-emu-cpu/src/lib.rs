@@ -75,6 +75,10 @@ pub struct Cpu {
     regs: Regs,
 }
 
+pub enum SideEffect {
+    Break
+}
+
 impl Cpu {
     pub fn new() -> Self {
         Self::default()
@@ -88,7 +92,7 @@ impl Cpu {
         self.regs
     }
 
-    pub fn execute_next(&mut self, bus: &mut impl Bus) {
+    pub fn execute_next(&mut self, bus: &mut impl Bus) -> Option<SideEffect> {
         let opcode = bus.read_u8(self.regs.pc);
         self.regs.pc += 1;
 
@@ -99,8 +103,12 @@ impl Cpu {
             (op::Mnemonic::Lda, Some(operand)) => {
                 lda(operand, &mut self.regs, bus);
             }
+            (op::Mnemonic::Brk, None) => {
+                return Some(SideEffect::Break)
+            }
             _ => todo!(),
         };
+        None
     }
 }
 
@@ -160,7 +168,7 @@ fn read_operand(mode: op::Mode, regs: &mut Regs, bus: &mut impl Bus) -> Option<W
     }
 }
 
-pub fn lda(address: Wu16, regs: &mut Regs, bus: &mut impl Bus) {
+fn lda(address: Wu16, regs: &mut Regs, bus: &mut impl Bus) {
     let value = bus.read_u8(address);
     regs.a = value;
 
