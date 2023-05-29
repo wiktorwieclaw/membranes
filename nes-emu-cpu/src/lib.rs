@@ -76,7 +76,7 @@ pub struct Cpu {
 }
 
 pub enum SideEffect {
-    Break
+    Break,
 }
 
 impl Cpu {
@@ -93,33 +93,38 @@ impl Cpu {
     }
 
     pub fn execute_next(&mut self, bus: &mut impl Bus) -> Option<SideEffect> {
-        let opcode = bus.read_u8(self.regs.pc);
-        self.regs.pc += 1;
+        let regs = &mut self.regs;
+
+        let opcode = bus.read_u8(regs.pc);
+        regs.pc += 1;
 
         let op = Op::parse(opcode);
+        let (mnemonic, mode) = (op.mnemonic(), op.mode());
 
-        let operand = read_operand(op.mode(), &mut self.regs, bus);
-        match (op.mnemonic(), operand) {
-            (op::Mnemonic::Lda, Some(operand)) => {
-                lda(operand, &mut self.regs, bus);
-            }
+        let operand = operand_address(mode, regs, bus);
+
+        match (mnemonic, operand) {
             (op::Mnemonic::Brk, None) => {
-                return Some(SideEffect::Break)
+                regs.flags.set(StatusFlags::B_1, true);
+                return Some(SideEffect::Break);
             }
+            (op::Mnemonic::Lda, Some(operand)) => lda(operand, regs, bus),
+            (op::Mnemonic::Sta, Some(operand)) => sta(operand, regs, bus),
             _ => todo!(),
         };
+
         None
     }
 }
 
-fn read_operand(mode: op::Mode, regs: &mut Regs, bus: &mut impl Bus) -> Option<Wu16> {
+fn operand_address(mode: op::Mode, regs: &mut Regs, bus: &mut impl Bus) -> Option<Wu16> {
     match mode {
-        op::Mode::Implied => None,
+        op::Mode::Implicit | op::Mode::Accumulator => None,
 
         op::Mode::Immediate => {
-            let data = regs.pc;
+            let address = regs.pc;
             regs.pc += 1;
-            Some(data)
+            Some(address)
         }
 
         op::Mode::ZeroPage => {
@@ -141,40 +146,49 @@ fn read_operand(mode: op::Mode, regs: &mut Regs, bus: &mut impl Bus) -> Option<W
         }
 
         op::Mode::Absolute => {
-            let data = bus.read_u16(regs.pc);
+            let address = bus.read_u16(regs.pc);
             regs.pc += 2;
-            Some(data)
+            Some(address)
         }
 
         op::Mode::AbsoluteX => {
-            let data = bus.read_u16(regs.pc) + regs.x.into_wu16();
+            let address = bus.read_u16(regs.pc) + regs.x.into_wu16();
             regs.pc += 2;
-            Some(data)
+            Some(address)
         }
 
         op::Mode::AbsoluteY => {
-            let data = bus.read_u16(regs.pc) + regs.y.into_wu16();
+            let address = bus.read_u16(regs.pc) + regs.y.into_wu16();
             regs.pc += 2;
-            Some(data)
+            Some(address)
         }
 
         op::Mode::IndirectX => {
-            todo!()
+            let address = (bus.read_u8(regs.pc) + regs.x).into_wu16();
+            let address = bus.read_u16(address);
+            regs.pc += 1;
+            Some(address)
         }
 
         op::Mode::IndirectY => {
-            todo!()
+            let address = bus.read_u8(regs.pc).into_wu16();
+            let address = bus.read_u16(address) + regs.y.into_wu16();
+            regs.pc += 1;
+            Some(address)
         }
     }
 }
 
 fn lda(address: Wu16, regs: &mut Regs, bus: &mut impl Bus) {
-    let value = bus.read_u8(address);
-    regs.a = value;
+    regs.a = bus.read_u8(address);
 
     let is_zero = regs.a == Wrapping(0);
     regs.flags.set(StatusFlags::ZERO, is_zero);
 
     let is_negative = regs.a & Wrapping(0b1000_0000) != Wrapping(0);
     regs.flags.set(StatusFlags::NEGATIVE, is_negative);
+}
+
+fn sta(address: Wu16, regs: &Regs, bus: &mut impl Bus) {
+    bus.write_u8(address, regs.a)
 }
