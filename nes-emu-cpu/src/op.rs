@@ -1,3 +1,5 @@
+use std::num::Wrapping;
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Op {
     mnemonic: Mnemonic,
@@ -26,8 +28,8 @@ pub enum Mode {
 }
 
 impl Op {
-    pub fn parse(opcode: u8) -> Self {
-        let (mnemonic, mode) = match opcode {
+    pub fn parse(opcode: Wrapping<u8>) -> Self {
+        let (mnemonic, mode) = match opcode.0 {
             0x00 => (Mnemonic::Brk, Mode::Implied),
             0xA9 => (Mnemonic::Lda, Mode::Immediate),
             0xA5 => (Mnemonic::Lda, Mode::ZeroPage),

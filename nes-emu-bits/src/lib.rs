@@ -1,22 +1,29 @@
 use std::num::Wrapping;
 
-pub trait WrappingU16Ext {
-    fn cast_wrapping_u8(self) -> Wrapping<u8>;
+pub mod prelude {
+    pub use super::{Wu16, Wu16Ext, Wu8, Wu8Ext};
 }
 
-impl WrappingU16Ext for Wrapping<u16> {
-    fn cast_wrapping_u8(self) -> Wrapping<u8> {
+pub type Wu8 = Wrapping<u8>;
+pub type Wu16 = Wrapping<u16>;
+
+pub trait Wu16Ext {
+    fn cast_wu8(self) -> Wu8;
+}
+
+impl Wu16Ext for Wu16 {
+    fn cast_wu8(self) -> Wu8 {
         Wrapping(self.0 as u8)
     }
 }
 
-pub trait WrappingU8Ext {
+pub trait Wu8Ext {
     // I named it `into` instead of `cast` because the conversion is loseless
-    fn into_wrapping_u16(self) -> Wrapping<u16>;
+    fn into_wu16(self) -> Wu16;
 }
 
-impl WrappingU8Ext for Wrapping<u8> {
-    fn into_wrapping_u16(self) -> Wrapping<u16> {
+impl Wu8Ext for Wu8 {
+    fn into_wu16(self) -> Wu16 {
         Wrapping(self.0.into())
     }
 }
