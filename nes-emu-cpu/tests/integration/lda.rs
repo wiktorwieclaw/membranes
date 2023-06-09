@@ -27,7 +27,7 @@ proptest! {
         let mut cpu = Cpu::from_regs(regs);
         let mut bus = [Wrapping(0xA9), Wrapping(0)];
 
-        cpu.execute_next(&mut bus);
+        cpu.next(&mut bus);
 
         assert_eq!(cpu.regs(), Regs {
             a: Wrapping(0x00),
@@ -48,7 +48,7 @@ proptest! {
         let mut cpu = Cpu::from_regs(regs);
         let mut bus = [Wrapping(0xA9), operand];
 
-        cpu.execute_next(&mut bus);
+        cpu.next(&mut bus);
 
         assert_eq!(cpu.regs(), Regs {
             a: operand,
@@ -68,7 +68,7 @@ proptest! {
         let mut cpu = Cpu::from_regs(regs);
         let mut bus = [Wrapping(0xA9), operand];
 
-        cpu.execute_next(&mut bus);
+        cpu.next(&mut bus);
 
         assert_eq!(cpu.regs(), Regs {
             a: operand,

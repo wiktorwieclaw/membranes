@@ -92,7 +92,7 @@ impl Cpu {
         self.regs
     }
 
-    pub fn execute_next(&mut self, bus: &mut impl Bus) -> Option<SideEffect> {
+    pub fn next(&mut self, bus: &mut impl Bus) -> Option<SideEffect> {
         let regs = &mut self.regs;
 
         let opcode = bus.read_u8(regs.pc);
@@ -101,15 +101,17 @@ impl Cpu {
         let op = Op::parse(opcode);
         let (mnemonic, mode) = (op.mnemonic(), op.mode());
 
-        let operand = operand_address(mode, regs, bus);
+        let address = operand_address(mode, regs, bus);
 
-        match (mnemonic, operand) {
+        match (mnemonic, address) {
             (op::Mnemonic::Brk, None) => {
                 regs.flags.set(StatusFlags::B_1, true);
                 return Some(SideEffect::Break);
             }
-            (op::Mnemonic::Lda, Some(operand)) => lda(operand, regs, bus),
-            (op::Mnemonic::Sta, Some(operand)) => sta(operand, regs, bus),
+            (op::Mnemonic::Lda, Some(address)) => lda(address, regs, bus),
+            (op::Mnemonic::Lda, None) => unreachable!(),
+            (op::Mnemonic::Sta, Some(address)) => sta(address, regs, bus),
+            (op::Mnemonic::Sta, None) => unreachable!(),
             _ => todo!(),
         };
 

@@ -35,7 +35,7 @@ impl Nes {
 
     pub fn run(&mut self) {
         loop {
-            self.cpu.execute_next(&mut self.bus);
+            self.cpu.next(&mut self.bus);
         }
     }
 }
