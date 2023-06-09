@@ -186,10 +186,11 @@ fn adc(address: u16, regs: &mut Regs, bus: &mut impl Bus) {
 
     let old_carry = regs.flags.contains(Flags::CARRY) as u8;
     let (sum, new_carry2) = sum.overflowing_add(old_carry);
-    
+
     regs.flags.set(Flags::CARRY, new_carry1 | new_carry2);
     regs.flags.set(Flags::ZERO, is_zero(sum));
-    regs.flags.set(Flags::OVERFLOW, is_signed_overflow(operand, regs.a, sum));
+    regs.flags
+        .set(Flags::OVERFLOW, is_signed_overflow(operand, regs.a, sum));
     regs.flags.set(Flags::NEGATIVE, is_negative(sum));
 
     regs.a = sum;

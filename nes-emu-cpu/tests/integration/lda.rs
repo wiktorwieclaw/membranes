@@ -1,4 +1,4 @@
-use nes_emu_cpu::{Cpu, Regs, Flags};
+use nes_emu_cpu::{Cpu, Flags, Regs};
 use proptest::prelude::*;
 
 prop_compose! {
@@ -22,7 +22,7 @@ prop_compose! {
 
 proptest! {
     #[test]
-    fn lda_updates_a_and_status_when_operand_is_0(regs in regs_with_pc(0x00)) {
+    fn zero(regs in regs_with_pc(0x00)) {
         let mut cpu = Cpu::from_regs(regs);
         let mut bus = [0xA9, 0x00];
 
@@ -40,10 +40,7 @@ proptest! {
     }
 
     #[test]
-    fn lda_updates_a_and_status_when_operand_is_positive(
-        regs in regs_with_pc(0x00),
-        operand in positive_byte(),
-    ) {
+    fn positive(regs in regs_with_pc(0x00), operand in positive_byte()) {
         let mut cpu = Cpu::from_regs(regs);
         let mut bus = [0xA9, operand];
 
@@ -60,10 +57,7 @@ proptest! {
     }
 
     #[test]
-    fn lda_updates_a_and_status_when_operand_is_negative(
-        regs in regs_with_pc(0x00),
-        operand in negative_byte(),
-    ) {
+    fn negative(regs in regs_with_pc(0x00), operand in negative_byte()) {
         let mut cpu = Cpu::from_regs(regs);
         let mut bus = [0xA9, operand];
 
