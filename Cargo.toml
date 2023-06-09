@@ -1,7 +1,6 @@
 [workspace]
 members = [
     "nes-emu",
-    "nes-emu-bits",
     "nes-emu-cpu",
     "nes-emu-joypad",
 ]

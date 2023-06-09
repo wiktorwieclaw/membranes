@@ -98,21 +98,15 @@ checksum = "f7012b1bbb0719e1097c47611d3898568c546d597c2e74d66f6087edd5233ff4"
 name = "nes-emu"
 version = "0.1.0"
 dependencies = [
- "nes-emu-bits",
  "nes-emu-cpu",
  "nes-emu-joypad",
 ]
-
-[[package]]
-name = "nes-emu-bits"
-version = "0.1.0"
 
 [[package]]
 name = "nes-emu-cpu"
 version = "0.1.0"
 dependencies = [
  "bitflags",
- "nes-emu-bits",
  "nes-emu-cpu",
  "proptest",
  "proptest-derive",

@@ -1,7 +1,6 @@
 use bitflags::bitflags;
-use nes_emu_bits::prelude::*;
 use op::Op;
-use std::{num::Wrapping, ops::IndexMut};
+use std::ops::IndexMut;
 
 mod op;
 
@@ -10,23 +9,23 @@ mod op;
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
 pub struct Regs {
     /// Accumulator
-    pub a: Wu8,
+    pub a: u8,
     /// Register X
-    pub x: Wu8,
+    pub x: u8,
     /// Register Y
-    pub y: Wu8,
+    pub y: u8,
     /// Program counter
-    pub pc: Wu16,
+    pub pc: u16,
     /// Stack pointer
-    pub sp: Wu8,
+    pub sp: u8,
     /// Status flags
-    pub flags: StatusFlags,
+    pub flags: Flags,
 }
 
 bitflags! {
     #[derive(Default)]
     #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
-    pub struct StatusFlags: u8 {
+    pub struct Flags: u8 {
         const CARRY = 0b0000_0001;
         const ZERO = 0b0000_0010;
         const INTERRUPT_DISABLE = 0b0000_0100;
@@ -39,34 +38,34 @@ bitflags! {
 }
 
 pub trait Bus {
-    fn read_u8(&mut self, address: Wu16) -> Wu8;
+    fn read_u8(&mut self, address: u16) -> u8;
 
-    fn write_u8(&mut self, address: Wu16, data: Wu8);
+    fn write_u8(&mut self, address: u16, data: u8);
 
-    fn read_u16(&mut self, address: Wu16) -> Wu16 {
-        let lo = self.read_u8(address).into_wu16();
-        let hi = self.read_u8(address + Wrapping(1)).into_wu16();
+    fn read_u16(&mut self, address: u16) -> u16 {
+        let lo: u16 = self.read_u8(address).into();
+        let hi: u16 = self.read_u8(address.wrapping_add(1)).into();
         (hi << 8) | lo
     }
 
-    fn write_u16(&mut self, address: Wu16, data: Wu16) {
-        let hi = (data >> 8).cast_wu8();
-        let lo = data.cast_wu8();
+    fn write_u16(&mut self, address: u16, data: u16) {
+        let hi = (data >> 8) as u8;
+        let lo = data as u8;
         self.write_u8(address, lo);
-        self.write_u8(address + Wrapping(1), hi);
+        self.write_u8(address.wrapping_add(1), hi);
     }
 }
 
 impl<T> Bus for T
 where
-    T: IndexMut<usize, Output = Wu8>,
+    T: IndexMut<usize, Output = u8>,
 {
-    fn read_u8(&mut self, address: Wu16) -> Wu8 {
-        self[usize::from(address.0)]
+    fn read_u8(&mut self, address: u16) -> u8 {
+        self[usize::from(address)]
     }
 
-    fn write_u8(&mut self, address: Wu16, data: Wu8) {
-        self[usize::from(address.0)] = data;
+    fn write_u8(&mut self, address: u16, data: u8) {
+        self[usize::from(address)] = data;
     }
 }
 
@@ -96,7 +95,7 @@ impl Cpu {
         let regs = &mut self.regs;
 
         let opcode = bus.read_u8(regs.pc);
-        regs.pc += 1;
+        regs.pc = regs.pc.wrapping_add(1);
 
         let op = Op::parse(opcode);
         let (mnemonic, mode) = (op.mnemonic(), op.mode());
@@ -105,7 +104,7 @@ impl Cpu {
 
         match (mnemonic, address) {
             (op::Mnemonic::Brk, None) => {
-                regs.flags.set(StatusFlags::B_1, true);
+                regs.flags.set(Flags::B_1, true);
                 return Some(SideEffect::Break);
             }
             (op::Mnemonic::Lda, Some(address)) => lda(address, regs, bus),
@@ -119,78 +118,101 @@ impl Cpu {
     }
 }
 
-fn operand_address(mode: op::Mode, regs: &mut Regs, bus: &mut impl Bus) -> Option<Wu16> {
+fn operand_address(mode: op::Mode, regs: &mut Regs, bus: &mut impl Bus) -> Option<u16> {
     match mode {
         op::Mode::Implicit | op::Mode::Accumulator => None,
 
         op::Mode::Immediate => {
             let address = regs.pc;
-            regs.pc += 1;
+            regs.pc = regs.pc.wrapping_add(1);
             Some(address)
         }
 
         op::Mode::ZeroPage => {
             let address = bus.read_u8(regs.pc);
-            regs.pc += 1;
-            Some(address.into_wu16())
+            regs.pc = regs.pc.wrapping_add(1);
+            Some(address.into())
         }
 
         op::Mode::ZeroPageX => {
-            let address = bus.read_u8(regs.pc) + regs.x;
-            regs.pc += 1;
-            Some(address.into_wu16())
+            let address = bus.read_u8(regs.pc).wrapping_add(regs.x);
+            regs.pc = regs.pc.wrapping_add(1);
+            Some(address.into())
         }
 
         op::Mode::ZeroPageY => {
-            let address = bus.read_u8(regs.pc) + regs.y;
-            regs.pc += 1;
-            Some(address.into_wu16())
+            let address = bus.read_u8(regs.pc).wrapping_add(regs.y);
+            regs.pc = regs.pc.wrapping_add(1);
+            Some(address.into())
         }
 
         op::Mode::Absolute => {
             let address = bus.read_u16(regs.pc);
-            regs.pc += 2;
+            regs.pc = regs.pc.wrapping_add(2);
             Some(address)
         }
 
         op::Mode::AbsoluteX => {
-            let address = bus.read_u16(regs.pc) + regs.x.into_wu16();
-            regs.pc += 2;
+            let address = bus.read_u16(regs.pc).wrapping_add(regs.x.into());
+            regs.pc = regs.pc.wrapping_add(2);
             Some(address)
         }
 
         op::Mode::AbsoluteY => {
-            let address = bus.read_u16(regs.pc) + regs.y.into_wu16();
-            regs.pc += 2;
+            let address = bus.read_u16(regs.pc).wrapping_add(regs.y.into());
+            regs.pc = regs.pc.wrapping_add(2);
             Some(address)
         }
 
         op::Mode::IndirectX => {
-            let address = (bus.read_u8(regs.pc) + regs.x).into_wu16();
+            let address = bus.read_u8(regs.pc).wrapping_add(regs.x).into();
             let address = bus.read_u16(address);
-            regs.pc += 1;
+            regs.pc = regs.pc.wrapping_add(1);
             Some(address)
         }
 
         op::Mode::IndirectY => {
-            let address = bus.read_u8(regs.pc).into_wu16();
-            let address = bus.read_u16(address) + regs.y.into_wu16();
-            regs.pc += 1;
+            let address = bus.read_u8(regs.pc).into();
+            let address = bus.read_u16(address).wrapping_add(regs.y.into());
+            regs.pc = regs.pc.wrapping_add(1);
             Some(address)
         }
     }
 }
 
-fn lda(address: Wu16, regs: &mut Regs, bus: &mut impl Bus) {
-    regs.a = bus.read_u8(address);
+fn adc(address: u16, regs: &mut Regs, bus: &mut impl Bus) {
+    let operand = bus.read_u8(address);
+    let (sum, new_carry1) = regs.a.overflowing_add(operand);
 
-    let is_zero = regs.a == Wrapping(0);
-    regs.flags.set(StatusFlags::ZERO, is_zero);
+    let old_carry = regs.flags.contains(Flags::CARRY) as u8;
+    let (sum, new_carry2) = sum.overflowing_add(old_carry);
+    
+    regs.flags.set(Flags::CARRY, new_carry1 | new_carry2);
+    regs.flags.set(Flags::ZERO, is_zero(sum));
+    regs.flags.set(Flags::OVERFLOW, is_signed_overflow(operand, regs.a, sum));
+    regs.flags.set(Flags::NEGATIVE, is_negative(sum));
 
-    let is_negative = regs.a & Wrapping(0b1000_0000) != Wrapping(0);
-    regs.flags.set(StatusFlags::NEGATIVE, is_negative);
+    regs.a = sum;
 }
 
-fn sta(address: Wu16, regs: &Regs, bus: &mut impl Bus) {
+fn lda(address: u16, regs: &mut Regs, bus: &mut impl Bus) {
+    regs.a = bus.read_u8(address);
+    regs.flags.set(Flags::ZERO, is_zero(regs.a));
+    regs.flags.set(Flags::NEGATIVE, is_negative(regs.a));
+}
+
+fn sta(address: u16, regs: &Regs, bus: &mut impl Bus) {
     bus.write_u8(address, regs.a)
+}
+
+fn is_zero(n: u8) -> bool {
+    n == 0x00
+}
+
+fn is_negative(n: u8) -> bool {
+    n & 0b1000_0000 != 0
+}
+
+fn is_signed_overflow(n: u8, m: u8, result: u8) -> bool {
+    (n ^ result) & (m & result) & 0x80 != 0
 }

@@ -1,6 +1,3 @@
-use nes_emu_bits::prelude::*;
-use std::num::Wrapping;
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Op {
     mnemonic: Mnemonic,
@@ -35,8 +32,8 @@ pub enum Mode {
 }
 
 impl Op {
-    pub fn parse(opcode: Wrapping<u8>) -> Self {
-        let (mnemonic, mode, cycles) = match opcode.0 {
+    pub fn parse(opcode: u8) -> Self {
+        let (mnemonic, mode, cycles) = match opcode {
             0x00 => (Mnemonic::Brk, Mode::Implicit, 7),
             0xA9 => (Mnemonic::Lda, Mode::Immediate, 2),
             0xA5 => (Mnemonic::Lda, Mode::ZeroPage, 3),

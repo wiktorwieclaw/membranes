@@ -35,12 +35,12 @@ impl Joypad {
         self.button_status_flags.remove(button_flags)
     }
 
-    pub fn read_u8(&mut self) -> Wrapping<u8> {
+    pub fn read_u8(&mut self) -> u8 {
         // TODO
-        Wrapping(0)
+        0
     }
 
-    pub fn write_u8(&mut self, data: Wrapping<u8>) {
+    pub fn write_u8(&mut self, data: u8) {
         // TODO
     }
 }

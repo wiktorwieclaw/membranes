@@ -1,6 +1,3 @@
-use std::num::Wrapping;
-
-use nes_emu_bits::prelude::*;
 use nes_emu_cpu::Cpu;
 use nes_emu_joypad::Joypad;
 
@@ -16,7 +13,7 @@ impl Default for Nes {
         Self {
             cpu: Default::default(),
             bus: Bus {
-                rom: [Wrapping(0); ROM_LEN],
+                rom: [0x00; ROM_LEN],
                 joypad_1: Default::default(),
                 joypad_2: Default::default(),
             },
@@ -29,7 +26,7 @@ impl Nes {
         Default::default()
     }
 
-    pub fn load(&mut self, program: &[Wu8; ROM_LEN]) {
+    pub fn load(&mut self, program: &[u8; ROM_LEN]) {
         self.bus.rom.copy_from_slice(&program[..]);
     }
 
@@ -41,26 +38,26 @@ impl Nes {
 }
 
 pub struct Bus {
-    pub rom: [Wu8; ROM_LEN],
+    pub rom: [u8; ROM_LEN],
     pub joypad_1: Joypad,
     pub joypad_2: Joypad,
 }
 
 impl nes_emu_cpu::Bus for Bus {
-    fn read_u8(&mut self, address: Wu16) -> Wu8 {
-        match address.0 {
+    fn read_u8(&mut self, address: u16) -> u8 {
+        match address {
             0x4016 => self.joypad_1.read_u8(),
             0x4017 => self.joypad_2.read_u8(),
             0x8000..=0xFFFF => {
-                let address = address.0 as usize;
+                let address = address as usize;
                 self.rom[address - 0x8000]
             }
             _ => todo!(),
         }
     }
 
-    fn write_u8(&mut self, address: Wu16, data: Wu8) {
-        match address.0 {
+    fn write_u8(&mut self, address: u16, data: u8) {
+        match address {
             0x4016 => self.joypad_1.write_u8(data),
             0x4017 => self.joypad_2.write_u8(data),
             0x8000..=0xFFFF => todo!(),

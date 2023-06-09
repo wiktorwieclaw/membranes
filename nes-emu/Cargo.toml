@@ -8,4 +8,3 @@ edition = "2021"
 [dependencies]
 nes-emu-cpu = { path = "../nes-emu-cpu" }
 nes-emu-joypad = { path = "../nes-emu-joypad" }
-nes-emu-bits = { path = "../nes-emu-bits" }
