@@ -100,6 +100,7 @@ impl Cpu {
         regs.pc = regs.pc.wrapping_add(1);
 
         let op = Op::parse(opcode);
+
         let (mnemonic, mode) = (op.mnemonic(), op.mode());
 
         let address = operand_address(mode, regs, bus);
@@ -111,6 +112,8 @@ impl Cpu {
             (op::Mnemonic::And, None) => unreachable!(),
             (op::Mnemonic::Asl, Some(address)) => asl(address, regs, bus),
             (op::Mnemonic::Asl, None) => asl_a(regs),
+            (op::Mnemonic::Bcc, Some(address)) => bcc(address, regs, bus),
+            (op::Mnemonic::Bcc, None) => unreachable!(),
             (op::Mnemonic::Brk, Some(_)) => unreachable!(),
             (op::Mnemonic::Brk, None) => {
                 regs.flags.set(Flags::B_1, true);
@@ -120,7 +123,6 @@ impl Cpu {
             (op::Mnemonic::Lda, None) => unreachable!(),
             (op::Mnemonic::Sta, Some(address)) => sta(address, regs, bus),
             (op::Mnemonic::Sta, None) => unreachable!(),
-            _ => todo!(),
         };
 
         None
@@ -131,60 +133,60 @@ fn operand_address(mode: op::Mode, regs: &mut Regs, bus: &mut impl Bus) -> Optio
     match mode {
         op::Mode::Implicit | op::Mode::Accumulator => None,
 
-        op::Mode::Immediate => {
-            let address = regs.pc;
+        op::Mode::Immediate | op::Mode::Relative => {
+            let operand = regs.pc;
             regs.pc = regs.pc.wrapping_add(1);
-            Some(address)
+            Some(operand)
         }
 
         op::Mode::ZeroPage => {
-            let address = bus.read_u8(regs.pc);
+            let operand = bus.read_u8(regs.pc);
             regs.pc = regs.pc.wrapping_add(1);
-            Some(address.into())
+            Some(operand.into())
         }
 
         op::Mode::ZeroPageX => {
-            let address = bus.read_u8(regs.pc).wrapping_add(regs.x);
+            let operand = bus.read_u8(regs.pc).wrapping_add(regs.x);
             regs.pc = regs.pc.wrapping_add(1);
-            Some(address.into())
+            Some(operand.into())
         }
 
         op::Mode::ZeroPageY => {
-            let address = bus.read_u8(regs.pc).wrapping_add(regs.y);
+            let operand = bus.read_u8(regs.pc).wrapping_add(regs.y);
             regs.pc = regs.pc.wrapping_add(1);
-            Some(address.into())
+            Some(operand.into())
         }
 
         op::Mode::Absolute => {
-            let address = bus.read_u16(regs.pc);
+            let operand = bus.read_u16(regs.pc);
             regs.pc = regs.pc.wrapping_add(2);
-            Some(address)
+            Some(operand)
         }
 
         op::Mode::AbsoluteX => {
-            let address = bus.read_u16(regs.pc).wrapping_add(regs.x.into());
+            let operand = bus.read_u16(regs.pc).wrapping_add(regs.x.into());
             regs.pc = regs.pc.wrapping_add(2);
-            Some(address)
+            Some(operand)
         }
 
         op::Mode::AbsoluteY => {
-            let address = bus.read_u16(regs.pc).wrapping_add(regs.y.into());
+            let operand = bus.read_u16(regs.pc).wrapping_add(regs.y.into());
             regs.pc = regs.pc.wrapping_add(2);
-            Some(address)
+            Some(operand)
         }
 
         op::Mode::IndirectX => {
             let address = bus.read_u8(regs.pc).wrapping_add(regs.x).into();
-            let address = bus.read_u16(address);
+            let operand = bus.read_u16(address);
             regs.pc = regs.pc.wrapping_add(1);
-            Some(address)
+            Some(operand)
         }
 
         op::Mode::IndirectY => {
             let address = bus.read_u8(regs.pc).into();
-            let address = bus.read_u16(address).wrapping_add(regs.y.into());
+            let operand = bus.read_u16(address).wrapping_add(regs.y.into());
             regs.pc = regs.pc.wrapping_add(1);
-            Some(address)
+            Some(operand)
         }
     }
 }
@@ -226,6 +228,13 @@ fn asl_impl(operand: u8, regs: &mut Regs) {
     regs.flags.set(Flags::CARRY, (operand >> 7) == 1);
     regs.flags.set(Flags::ZERO, is_zero(regs.a));
     regs.flags.set(Flags::NEGATIVE, is_negative(regs.a));
+}
+
+fn bcc(address: u16, regs: &mut Regs, bus: &mut impl Bus) {
+    if !regs.flags.contains(Flags::CARRY) {
+        let offset = bus.read_u8(address);
+        regs.pc = regs.pc.wrapping_add(offset.into());
+    }
 }
 
 fn lda(address: u16, regs: &mut Regs, bus: &mut impl Bus) {

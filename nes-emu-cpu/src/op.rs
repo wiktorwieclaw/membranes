@@ -13,6 +13,8 @@ pub enum Mnemonic {
     And,
     /// Arithmetic Shift Left
     Asl,
+    /// Branch if Carry Clear
+    Bcc,
     /// Force Interrupt
     Brk,
     /// Load Accumulator
@@ -25,6 +27,7 @@ pub enum Mnemonic {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Mode {
     Implicit,
+    Relative,
     Accumulator,
     Immediate,
     ZeroPage,
@@ -61,6 +64,7 @@ impl Op {
             0x16 => (Mnemonic::Asl, Mode::ZeroPageX, 6),
             0x0E => (Mnemonic::Asl, Mode::Absolute, 6),
             0x1E => (Mnemonic::Asl, Mode::AbsoluteX, 7),
+            0x90 => (Mnemonic::Bcc, Mode::Relative, 2),
             0x00 => (Mnemonic::Brk, Mode::Implicit, 7),
             0xA9 => (Mnemonic::Lda, Mode::Immediate, 2),
             0xA5 => (Mnemonic::Lda, Mode::ZeroPage, 3),
