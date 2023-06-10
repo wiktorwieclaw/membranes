@@ -11,6 +11,8 @@ pub enum Mnemonic {
     Adc,
     /// Logical AND
     And,
+    /// Arithmetic Shift Left
+    Asl,
     /// Force Interrupt
     Brk,
     /// Load Accumulator
@@ -54,6 +56,11 @@ impl Op {
             0x39 => (Mnemonic::And, Mode::AbsoluteY, 4),
             0x21 => (Mnemonic::And, Mode::IndirectX, 6),
             0x31 => (Mnemonic::And, Mode::IndirectY, 5),
+            0x0A => (Mnemonic::Asl, Mode::Accumulator, 2),
+            0x06 => (Mnemonic::Asl, Mode::ZeroPage, 5),
+            0x16 => (Mnemonic::Asl, Mode::ZeroPageX, 6),
+            0x0E => (Mnemonic::Asl, Mode::Absolute, 6),
+            0x1E => (Mnemonic::Asl, Mode::AbsoluteX, 7),
             0x00 => (Mnemonic::Brk, Mode::Implicit, 7),
             0xA9 => (Mnemonic::Lda, Mode::Immediate, 2),
             0xA5 => (Mnemonic::Lda, Mode::ZeroPage, 3),

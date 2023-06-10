@@ -109,6 +109,9 @@ impl Cpu {
             (op::Mnemonic::Adc, None) => unreachable!(),
             (op::Mnemonic::And, Some(address)) => and(address, regs, bus),
             (op::Mnemonic::And, None) => unreachable!(),
+            (op::Mnemonic::Asl, Some(address)) => asl(address, regs, bus),
+            (op::Mnemonic::Asl, None) => asl_a(regs),
+            (op::Mnemonic::Brk, Some(_)) => unreachable!(),
             (op::Mnemonic::Brk, None) => {
                 regs.flags.set(Flags::B_1, true);
                 return Some(SideEffect::Break);
@@ -205,6 +208,22 @@ fn adc(address: u16, regs: &mut Regs, bus: &mut impl Bus) {
 fn and(address: u16, regs: &mut Regs, bus: &mut impl Bus) {
     let operand = bus.read_u8(address);
     regs.a &= operand;
+    regs.flags.set(Flags::ZERO, is_zero(regs.a));
+    regs.flags.set(Flags::NEGATIVE, is_negative(regs.a));
+}
+
+fn asl_a(regs: &mut Regs) {
+    asl_impl(regs.a, regs);
+}
+
+fn asl(address: u16, regs: &mut Regs, bus: &mut impl Bus) {
+    let operand = bus.read_u8(address);
+    asl_impl(operand, regs);
+}
+
+fn asl_impl(operand: u8, regs: &mut Regs) {
+    regs.a = operand << 1;
+    regs.flags.set(Flags::CARRY, (operand >> 7) == 1);
     regs.flags.set(Flags::ZERO, is_zero(regs.a));
     regs.flags.set(Flags::NEGATIVE, is_negative(regs.a));
 }

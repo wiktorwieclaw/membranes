@@ -1,5 +1,6 @@
 mod adc;
-mod lda;
 mod and;
+mod asl;
+mod lda;
 
 mod strategy;
