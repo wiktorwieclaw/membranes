@@ -9,6 +9,8 @@ pub struct Op {
 pub enum Mnemonic {
     /// Add with Carry
     Adc,
+    /// Logical AND
+    And,
     /// Force Interrupt
     Brk,
     /// Load Accumulator
@@ -44,6 +46,14 @@ impl Op {
             0x79 => (Mnemonic::Adc, Mode::AbsoluteY, 4),
             0x61 => (Mnemonic::Adc, Mode::IndirectX, 6),
             0x71 => (Mnemonic::Adc, Mode::IndirectY, 5),
+            0x29 => (Mnemonic::And, Mode::Immediate, 2),
+            0x25 => (Mnemonic::And, Mode::ZeroPage, 3),
+            0x35 => (Mnemonic::And, Mode::ZeroPageX, 4),
+            0x2D => (Mnemonic::And, Mode::Absolute, 4),
+            0x3D => (Mnemonic::And, Mode::AbsoluteX, 4),
+            0x39 => (Mnemonic::And, Mode::AbsoluteY, 4),
+            0x21 => (Mnemonic::And, Mode::IndirectX, 6),
+            0x31 => (Mnemonic::And, Mode::IndirectY, 5),
             0x00 => (Mnemonic::Brk, Mode::Implicit, 7),
             0xA9 => (Mnemonic::Lda, Mode::Immediate, 2),
             0xA5 => (Mnemonic::Lda, Mode::ZeroPage, 3),

@@ -107,6 +107,8 @@ impl Cpu {
         match (mnemonic, address) {
             (op::Mnemonic::Adc, Some(address)) => adc(address, regs, bus),
             (op::Mnemonic::Adc, None) => unreachable!(),
+            (op::Mnemonic::And, Some(address)) => and(address, regs, bus),
+            (op::Mnemonic::And, None) => unreachable!(),
             (op::Mnemonic::Brk, None) => {
                 regs.flags.set(Flags::B_1, true);
                 return Some(SideEffect::Break);
@@ -198,6 +200,13 @@ fn adc(address: u16, regs: &mut Regs, bus: &mut impl Bus) {
     regs.flags.set(Flags::NEGATIVE, is_negative(sum));
 
     regs.a = sum;
+}
+
+fn and(address: u16, regs: &mut Regs, bus: &mut impl Bus) {
+    let operand = bus.read_u8(address);
+    regs.a &= operand;
+    regs.flags.set(Flags::ZERO, is_zero(regs.a));
+    regs.flags.set(Flags::NEGATIVE, is_negative(regs.a));
 }
 
 fn lda(address: u16, regs: &mut Regs, bus: &mut impl Bus) {
