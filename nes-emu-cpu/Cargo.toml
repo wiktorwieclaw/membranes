@@ -17,3 +17,4 @@ proptest-derive = { version = "0.3.0", optional = true }
 nes-emu-cpu = { path = ".", features = ["proptest"] }
 proptest = "1.2.0"
 proptest-derive = "0.3.0"
+test-strategy = "0.3.0"

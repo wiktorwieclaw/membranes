@@ -1,0 +1,11 @@
+# Seeds for failure cases proptest has generated in the past. It is
+# automatically read and these particular cases re-run before any
+# novel cases are generated.
+#
+# It is recommended to check this file in to source control so that
+# everyone who runs the test benefits from these saved cases.
+cc f4ab39c1c595e91fd7ea24d3b5512f09947e8dc2a3fc0bb5aeec32fe66615a0e # shrinks to regs = Regs { a: 0, x: 0, y: 0, pc: 0, sp: 0, flags: CARRY | ZERO }
+cc b8e029f36864f73b7163a4970324eb5c6b9a184ea2300898241d05cdccdee389 # shrinks to regs = Regs { a: 0, x: 0, y: 0, pc: 0, sp: 0, flags: CARRY | ZERO }
+cc d4521ff14882b7161a384d5531ca7e03f701713ef0b58b1c96c4bcf7e680324e # shrinks to regs = Regs { a: 0, x: 0, y: 0, pc: 0, sp: 0, flags: CARRY }
+cc d32f4ed5940f65f3838258c06d257301372da56e4ce6e94b010f5544eb689fb0 # shrinks to regs = Regs { a: 0, x: 0, y: 0, pc: 0, sp: 0, flags: CARRY | ZERO }
+cc 7229ebbebaa7baef5da74efc21ebda5b5eab6241e336183811500acdffa6c853 # shrinks to regs = Regs { a: 0, x: 0, y: 0, pc: 0, sp: 0, flags: CARRY | ZERO }

@@ -26,12 +26,14 @@ bitflags! {
     #[derive(Default)]
     #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
     pub struct Flags: u8 {
+        // Unsigned carry
         const CARRY = 0b0000_0001;
         const ZERO = 0b0000_0010;
         const INTERRUPT_DISABLE = 0b0000_0100;
         const DECIMAL = 0b0000_1000;
         const B_1 = 0b0001_0000;
         const B_2 = 0b0010_0000;
+        /// Signed overflow
         const OVERFLOW = 0b0100_0000;
         const NEGATIVE = 0b1000_0000;
     }
@@ -103,6 +105,8 @@ impl Cpu {
         let address = operand_address(mode, regs, bus);
 
         match (mnemonic, address) {
+            (op::Mnemonic::Adc, Some(address)) => adc(address, regs, bus),
+            (op::Mnemonic::Adc, None) => unreachable!(),
             (op::Mnemonic::Brk, None) => {
                 regs.flags.set(Flags::B_1, true);
                 return Some(SideEffect::Break);
@@ -215,5 +219,5 @@ fn is_negative(n: u8) -> bool {
 }
 
 fn is_signed_overflow(n: u8, m: u8, result: u8) -> bool {
-    (n ^ result) & (m & result) & 0x80 != 0
+    (n ^ result) & (m ^ result) & 0x80 != 0
 }

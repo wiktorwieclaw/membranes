@@ -7,6 +7,8 @@ pub struct Op {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Mnemonic {
+    /// Add with Carry
+    Adc,
     /// Force Interrupt
     Brk,
     /// Load Accumulator
@@ -34,6 +36,14 @@ pub enum Mode {
 impl Op {
     pub fn parse(opcode: u8) -> Self {
         let (mnemonic, mode, cycles) = match opcode {
+            0x69 => (Mnemonic::Adc, Mode::Immediate, 2),
+            0x65 => (Mnemonic::Adc, Mode::ZeroPage, 3),
+            0x75 => (Mnemonic::Adc, Mode::ZeroPageX, 4),
+            0x6D => (Mnemonic::Adc, Mode::Absolute, 4),
+            0x7D => (Mnemonic::Adc, Mode::AbsoluteX, 4),
+            0x79 => (Mnemonic::Adc, Mode::AbsoluteY, 4),
+            0x61 => (Mnemonic::Adc, Mode::IndirectX, 6),
+            0x71 => (Mnemonic::Adc, Mode::IndirectY, 5),
             0x00 => (Mnemonic::Brk, Mode::Implicit, 7),
             0xA9 => (Mnemonic::Lda, Mode::Immediate, 2),
             0xA5 => (Mnemonic::Lda, Mode::ZeroPage, 3),
