@@ -1,0 +1,8 @@
+# Seeds for failure cases proptest has generated in the past. It is
+# automatically read and these particular cases re-run before any
+# novel cases are generated.
+#
+# It is recommended to check this file in to source control so that
+# everyone who runs the test benefits from these saved cases.
+cc 0bf8a3f759c713b83b3fb56a010dce38af9e337378cd3610bf5a9066e95cdf72 # shrinks to input = _EqualArgs { regs: Regs { a: 0, x: 0, y: 0, pc: 0, sp: 0, flags: (empty) } }
+cc b8ed5f780856ad7d3c9207e8bef3cb4359de3e43fd27de41bb5e234eeba9b8df # shrinks to input = _GreaterArgs { regs: Regs { a: 0, x: 0, y: 0, pc: 0, sp: 0, flags: (empty) } }

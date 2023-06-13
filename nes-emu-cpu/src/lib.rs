@@ -144,6 +144,8 @@ impl Cpu {
             (op::Mnemonic::Cli, None) => cli(regs),
             (op::Mnemonic::Clv, Some(_)) => unreachable!(),
             (op::Mnemonic::Clv, None) => clv(regs),
+            (op::Mnemonic::Cmp, Some(address)) => cmp(address, regs, bus),
+            (op::Mnemonic::Cmp, None) => unreachable!(),
             (op::Mnemonic::Jmp, Some(address)) => jmp(address, regs),
             (op::Mnemonic::Jmp, None) => unreachable!(),
             (op::Mnemonic::Jsr, Some(address)) => jsr(address, regs, bus),
@@ -291,19 +293,27 @@ fn beq(address: u16, regs: &mut Regs, bus: &mut impl Bus) {
 }
 
 fn clc(regs: &mut Regs) {
-    regs.flags.set(Flags::CARRY, false);
+    regs.flags.remove(Flags::CARRY);
 }
 
 fn cld(regs: &mut Regs) {
-    regs.flags.set(Flags::DECIMAL, false);
+    regs.flags.remove(Flags::DECIMAL);
 }
 
 fn cli(regs: &mut Regs) {
-    regs.flags.set(Flags::INTERRUPT_DISABLE, false);
+    regs.flags.remove(Flags::INTERRUPT_DISABLE);
 }
 
 fn clv(regs: &mut Regs) {
-    regs.flags.set(Flags::OVERFLOW, false);
+    regs.flags.remove(Flags::OVERFLOW);
+}
+
+fn cmp(address: u16, regs: &mut Regs, bus: &mut impl Bus) {
+    let m = bus.read_u8(address);
+    regs.flags.set(Flags::CARRY, regs.a >= m);
+    regs.flags.set(Flags::ZERO, regs.a == m);
+    regs.flags
+        .set(Flags::NEGATIVE, is_negative(regs.a.wrapping_sub(m)));
 }
 
 fn jmp(address: u16, regs: &mut Regs) {
