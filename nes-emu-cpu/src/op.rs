@@ -19,12 +19,75 @@ pub enum Mnemonic {
     Bcs,
     /// Branch if Equal
     Beq,
+    /// Bit Test
+    Bit,
+    /// Branch if Minus
+    Bmi,
+    /// Branch if Not Equal
+    Bne,
+    /// Branch if Positive
+    Bpl,
     /// Force Interrupt
     Brk,
+    /// Branch if Overflow Clear
+    Bvc,
+    /// Branch if Overflow Set
+    Bvs,
+    /// Clear Carry Flag
+    Clc,
+    /// Clear Decimal Mode
+    Cld,
+    /// Clear Interrupt Disable
+    Cli,
+    /// Clear Overflow Flag
+    Clv,
+    /// Compare
+    Cmp,
+    /// Compare X Register
+    Cpx,
+    /// Compare Y Register
+    Cpy,
+    /// Decrement Memory
+    Dec,
+    /// Decrement X Register
+    Dex,
+    /// Decrement Y Register
+    Dey,
+    Eor,
+    Inc,
+    Inx,
+    Iny,
+    Jmp,
+    Jsr,
     /// Load Accumulator
     Lda,
+    Ldx,
+    Ldy,
+    Lsr,
+    Nop,
+    Ora,
+    Pha,
+    Php,
+    Pla,
+    Plp,
+    Rol,
+    Ror,
+    Rti,
+    Rts,
+    Sbc,
+    Sec,
+    Sed,
+    Sei,
     /// Store Accumulator
     Sta,
+    Stx,
+    Sty,
+    Tax,
+    Tay,
+    Tsx,
+    Txa,
+    Txs,
+    Tya,
 }
 
 /// Addressing Mode
@@ -72,6 +135,7 @@ impl Op {
             0xB0 => (Mnemonic::Bcs, Mode::Relative, 2),
             0xF0 => (Mnemonic::Beq, Mode::Relative, 2),
             0x00 => (Mnemonic::Brk, Mode::Implicit, 7),
+            0x20 => (Mnemonic::Jsr, Mode::Absolute, 6),
             0xA9 => (Mnemonic::Lda, Mode::Immediate, 2),
             0xA5 => (Mnemonic::Lda, Mode::ZeroPage, 3),
             0xB5 => (Mnemonic::Lda, Mode::ZeroPageX, 4),
@@ -80,6 +144,7 @@ impl Op {
             0xB9 => (Mnemonic::Lda, Mode::AbsoluteY, 4),
             0xA1 => (Mnemonic::Lda, Mode::IndirectX, 6),
             0xB1 => (Mnemonic::Lda, Mode::IndirectY, 5),
+            0x60 => (Mnemonic::Rts, Mode::Implicit, 6),
             0x85 => (Mnemonic::Sta, Mode::ZeroPage, 3),
             0x95 => (Mnemonic::Sta, Mode::ZeroPageX, 4),
             0x8D => (Mnemonic::Sta, Mode::Absolute, 4),
