@@ -114,6 +114,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "nes-emu-cpu-snake"
+version = "0.1.0"
+dependencies = [
+ "nes-emu-cpu",
+]
+
+[[package]]
 name = "nes-emu-joypad"
 version = "0.1.0"
 dependencies = [

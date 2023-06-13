@@ -46,24 +46,28 @@ pub trait Bus {
 
     fn write_u8(&mut self, address: u16, data: u8);
 
+    /// [AB, CD] -> 0xABCD
     fn read_u16_be(&mut self, address: u16) -> u16 {
         let x = self.read_u8(address);
         let y = self.read_u8(address.wrapping_add(1));
         u16::from_be_bytes([x, y])
     }
 
+    /// 0xABCD -> [AB, CD]
     fn write_u16_be(&mut self, address: u16, data: u16) {
         let [x, y] = data.to_be_bytes();
         self.write_u8(address, x);
         self.write_u8(address.wrapping_add(1), y);
     }
 
+    /// [AB, CD] -> 0xCDAB
     fn read_u16_le(&mut self, address: u16) -> u16 {
         let x = self.read_u8(address);
         let y = self.read_u8(address.wrapping_add(1));
         u16::from_le_bytes([x, y])
     }
 
+    /// 0xABCD -> [CD, AB]
     fn write_u16_le(&mut self, address: u16, data: u16) {
         let [x, y] = data.to_le_bytes();
         self.write_u8(address, x);
@@ -106,7 +110,7 @@ impl Cpu {
         self.regs
     }
 
-    pub fn next(&mut self, bus: &mut impl Bus) -> Option<SideEffect> {
+    pub fn next(&mut self, bus: &mut impl Bus) -> (op::Op, Option<SideEffect>) {
         let regs = &mut self.regs;
 
         let opcode = bus.read_u8(regs.pc);
@@ -134,7 +138,7 @@ impl Cpu {
             (op::Mnemonic::Brk, Some(_)) => unreachable!(),
             (op::Mnemonic::Brk, None) => {
                 regs.flags.set(Flags::B_1, true);
-                return Some(SideEffect::Break);
+                return (op, Some(SideEffect::Break));
             }
             (op::Mnemonic::Clc, Some(_)) => unreachable!(),
             (op::Mnemonic::Clc, None) => clc(regs),
@@ -159,7 +163,7 @@ impl Cpu {
             _ => todo!(),
         };
 
-        None
+        (op, None)
     }
 }
 
@@ -192,40 +196,40 @@ fn operand_address(mode: op::Mode, regs: &mut Regs, bus: &mut impl Bus) -> Optio
         }
 
         op::Mode::Absolute => {
-            let operand = bus.read_u16_be(regs.pc);
+            let operand = bus.read_u16_le(regs.pc);
             regs.pc = regs.pc.wrapping_add(2);
             Some(operand)
         }
 
         op::Mode::AbsoluteX => {
-            let operand = bus.read_u16_be(regs.pc).wrapping_add(regs.x.into());
+            let operand = bus.read_u16_le(regs.pc).wrapping_add(regs.x.into());
             regs.pc = regs.pc.wrapping_add(2);
             Some(operand)
         }
 
         op::Mode::AbsoluteY => {
-            let operand = bus.read_u16_be(regs.pc).wrapping_add(regs.y.into());
+            let operand = bus.read_u16_le(regs.pc).wrapping_add(regs.y.into());
             regs.pc = regs.pc.wrapping_add(2);
             Some(operand)
         }
 
         op::Mode::Indirect => {
-            let address = bus.read_u16_be(regs.pc);
-            let operand = bus.read_u16_be(address);
+            let address = bus.read_u16_le(regs.pc);
+            let operand = bus.read_u16_le(address);
             regs.pc = regs.pc.wrapping_add(1);
             Some(operand)
         }
 
         op::Mode::IndirectX => {
             let address = bus.read_u8(regs.pc).wrapping_add(regs.x).into();
-            let operand = bus.read_u16_be(address);
+            let operand = bus.read_u16_le(address);
             regs.pc = regs.pc.wrapping_add(1);
             Some(operand)
         }
 
         op::Mode::IndirectY => {
             let address = bus.read_u8(regs.pc).into();
-            let operand = bus.read_u16_be(address).wrapping_add(regs.y.into());
+            let operand = bus.read_u16_le(address).wrapping_add(regs.y.into());
             regs.pc = regs.pc.wrapping_add(1);
             Some(operand)
         }
@@ -321,12 +325,12 @@ fn jmp(address: u16, regs: &mut Regs) {
 }
 
 fn jsr(address: u16, regs: &mut Regs, bus: &mut impl Bus) {
-    bus.write_u16_le(
+    bus.write_u16_be(
         STACK_START.wrapping_add(regs.sp.wrapping_sub(1).into()),
         regs.pc.wrapping_sub(1),
     );
     regs.sp = regs.sp.wrapping_sub(2);
-    regs.pc = bus.read_u16_be(address);
+    regs.pc = address;
 }
 
 fn lda(address: u16, regs: &mut Regs, bus: &mut impl Bus) {
@@ -337,7 +341,7 @@ fn lda(address: u16, regs: &mut Regs, bus: &mut impl Bus) {
 
 fn rts(regs: &mut Regs, bus: &mut impl Bus) {
     regs.pc = bus
-        .read_u16_le(STACK_START.wrapping_add(regs.sp.wrapping_add(1).into()))
+        .read_u16_be(STACK_START.wrapping_add(regs.sp.wrapping_add(1).into()))
         .wrapping_add(1);
     regs.sp = regs.sp.wrapping_add(2);
 }

@@ -3,4 +3,5 @@ members = [
     "nes-emu",
     "nes-emu-cpu",
     "nes-emu-joypad",
+    "nes-emu-cpu-snake"
 ]

@@ -198,7 +198,7 @@ impl Op {
             0x99 => (Mnemonic::Sta, Mode::AbsoluteY, 5),
             0x81 => (Mnemonic::Sta, Mode::IndirectX, 6),
             0x91 => (Mnemonic::Sta, Mode::IndirectY, 6),
-            _ => panic!(),
+            _ => todo!(),
         };
         Self {
             mnemonic,
