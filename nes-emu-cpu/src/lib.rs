@@ -2,7 +2,7 @@ use bitflags::bitflags;
 use op::Op;
 use std::ops::IndexMut;
 
-mod op;
+pub mod op;
 
 const STACK_START: u16 = 0x0100;
 
@@ -144,6 +144,8 @@ impl Cpu {
             (op::Mnemonic::Cli, None) => cli(regs),
             (op::Mnemonic::Clv, Some(_)) => unreachable!(),
             (op::Mnemonic::Clv, None) => clv(regs),
+            (op::Mnemonic::Jmp, Some(address)) => jmp(address, regs),
+            (op::Mnemonic::Jmp, None) => unreachable!(),
             (op::Mnemonic::Jsr, Some(address)) => jsr(address, regs, bus),
             (op::Mnemonic::Jsr, None) => unreachable!(),
             (op::Mnemonic::Lda, Some(address)) => lda(address, regs, bus),
@@ -202,6 +204,13 @@ fn operand_address(mode: op::Mode, regs: &mut Regs, bus: &mut impl Bus) -> Optio
         op::Mode::AbsoluteY => {
             let operand = bus.read_u16_be(regs.pc).wrapping_add(regs.y.into());
             regs.pc = regs.pc.wrapping_add(2);
+            Some(operand)
+        }
+
+        op::Mode::Indirect => {
+            let address = bus.read_u16_be(regs.pc);
+            let operand = bus.read_u16_be(address);
+            regs.pc = regs.pc.wrapping_add(1);
             Some(operand)
         }
 
@@ -295,6 +304,10 @@ fn cli(regs: &mut Regs) {
 
 fn clv(regs: &mut Regs) {
     regs.flags.set(Flags::OVERFLOW, false);
+}
+
+fn jmp(address: u16, regs: &mut Regs) {
+    regs.pc = address
 }
 
 fn jsr(address: u16, regs: &mut Regs, bus: &mut impl Bus) {

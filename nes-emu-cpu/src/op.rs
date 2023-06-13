@@ -134,6 +134,7 @@ pub enum Mode {
     Absolute,
     AbsoluteX,
     AbsoluteY,
+    Indirect,
     IndirectX,
     IndirectY,
 }
@@ -170,6 +171,8 @@ impl Op {
             0xD8 => (Mnemonic::Cld, Mode::Implicit, 2),
             0x58 => (Mnemonic::Cli, Mode::Implicit, 2),
             0xB8 => (Mnemonic::Clv, Mode::Implicit, 2),
+            0x4C => (Mnemonic::Jmp, Mode::Absolute, 3),
+            0x6C => (Mnemonic::Jmp, Mode::Indirect, 5),
             0x20 => (Mnemonic::Jsr, Mode::Absolute, 6),
             0xA9 => (Mnemonic::Lda, Mode::Immediate, 2),
             0xA5 => (Mnemonic::Lda, Mode::ZeroPage, 3),

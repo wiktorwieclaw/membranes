@@ -4,6 +4,7 @@ mod asl;
 mod bcc;
 mod bcs;
 mod beq;
+mod jmp;
 mod jsr;
 mod lda;
 mod rts;
