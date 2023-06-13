@@ -15,6 +15,10 @@ pub enum Mnemonic {
     Asl,
     /// Branch if Carry Clear
     Bcc,
+    /// Branch if Carry Set
+    Bcs,
+    /// Branch if Equal
+    Beq,
     /// Force Interrupt
     Brk,
     /// Load Accumulator
@@ -65,6 +69,8 @@ impl Op {
             0x0E => (Mnemonic::Asl, Mode::Absolute, 6),
             0x1E => (Mnemonic::Asl, Mode::AbsoluteX, 7),
             0x90 => (Mnemonic::Bcc, Mode::Relative, 2),
+            0xB0 => (Mnemonic::Bcs, Mode::Relative, 2),
+            0xF0 => (Mnemonic::Beq, Mode::Relative, 2),
             0x00 => (Mnemonic::Brk, Mode::Implicit, 7),
             0xA9 => (Mnemonic::Lda, Mode::Immediate, 2),
             0xA5 => (Mnemonic::Lda, Mode::ZeroPage, 3),

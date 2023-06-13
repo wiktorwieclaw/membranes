@@ -114,6 +114,10 @@ impl Cpu {
             (op::Mnemonic::Asl, None) => asl_a(regs),
             (op::Mnemonic::Bcc, Some(address)) => bcc(address, regs, bus),
             (op::Mnemonic::Bcc, None) => unreachable!(),
+            (op::Mnemonic::Bcs, Some(address)) => bcs(address, regs, bus),
+            (op::Mnemonic::Bcs, None) => unreachable!(),
+            (op::Mnemonic::Beq, Some(address)) => beq(address, regs, bus),
+            (op::Mnemonic::Beq, None) => unreachable!(),
             (op::Mnemonic::Brk, Some(_)) => unreachable!(),
             (op::Mnemonic::Brk, None) => {
                 regs.flags.set(Flags::B_1, true);
@@ -232,6 +236,20 @@ fn asl_impl(operand: u8, regs: &mut Regs) {
 
 fn bcc(address: u16, regs: &mut Regs, bus: &mut impl Bus) {
     if !regs.flags.contains(Flags::CARRY) {
+        let offset = bus.read_u8(address);
+        regs.pc = regs.pc.wrapping_add(offset.into());
+    }
+}
+
+fn bcs(address: u16, regs: &mut Regs, bus: &mut impl Bus) {
+    if regs.flags.contains(Flags::CARRY) {
+        let offset = bus.read_u8(address);
+        regs.pc = regs.pc.wrapping_add(offset.into());
+    }
+}
+
+fn beq(address: u16, regs: &mut Regs, bus: &mut impl Bus) {
+    if regs.flags.contains(Flags::ZERO) {
         let offset = bus.read_u8(address);
         regs.pc = regs.pc.wrapping_add(offset.into());
     }
