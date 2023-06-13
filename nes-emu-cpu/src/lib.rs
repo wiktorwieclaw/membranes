@@ -136,6 +136,14 @@ impl Cpu {
                 regs.flags.set(Flags::B_1, true);
                 return Some(SideEffect::Break);
             }
+            (op::Mnemonic::Clc, Some(_)) => unreachable!(),
+            (op::Mnemonic::Clc, None) => clc(regs),
+            (op::Mnemonic::Cld, Some(_)) => unreachable!(),
+            (op::Mnemonic::Cld, None) => cld(regs),
+            (op::Mnemonic::Cli, Some(_)) => unreachable!(),
+            (op::Mnemonic::Cli, None) => cli(regs),
+            (op::Mnemonic::Clv, Some(_)) => unreachable!(),
+            (op::Mnemonic::Clv, None) => clv(regs),
             (op::Mnemonic::Jsr, Some(address)) => jsr(address, regs, bus),
             (op::Mnemonic::Jsr, None) => unreachable!(),
             (op::Mnemonic::Lda, Some(address)) => lda(address, regs, bus),
@@ -271,6 +279,22 @@ fn beq(address: u16, regs: &mut Regs, bus: &mut impl Bus) {
         let offset = bus.read_u8(address);
         regs.pc = regs.pc.wrapping_add(offset.into());
     }
+}
+
+fn clc(regs: &mut Regs) {
+    regs.flags.set(Flags::CARRY, false);
+}
+
+fn cld(regs: &mut Regs) {
+    regs.flags.set(Flags::DECIMAL, false);
+}
+
+fn cli(regs: &mut Regs) {
+    regs.flags.set(Flags::INTERRUPT_DISABLE, false);
+}
+
+fn clv(regs: &mut Regs) {
+    regs.flags.set(Flags::OVERFLOW, false);
 }
 
 fn jsr(address: u16, regs: &mut Regs, bus: &mut impl Bus) {
