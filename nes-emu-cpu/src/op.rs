@@ -53,40 +53,71 @@ pub enum Mnemonic {
     Dex,
     /// Decrement Y Register
     Dey,
+    /// Exclusive OR
     Eor,
+    /// Increment Memory
     Inc,
+    /// Increment X Register
     Inx,
+    /// Increment Y Register
     Iny,
+    /// Jump
     Jmp,
+    /// Jump to Subroutine
     Jsr,
     /// Load Accumulator
     Lda,
+    /// Load X Register
     Ldx,
+    /// Load Y Register
     Ldy,
+    /// Logical Shift Right
     Lsr,
+    /// No Operation
     Nop,
+    /// Logical Inclusive OR
     Ora,
+    /// Push Accumulator
     Pha,
+    /// Push Processor Status
     Php,
+    /// Pull Accumulator
     Pla,
+    /// Pull Processor Status
     Plp,
+    /// Rotate Left
     Rol,
+    /// Rotate Right
     Ror,
+    /// Return from Interrupt
     Rti,
+    /// Return from Subroutine
     Rts,
+    /// Subtract with Carry
     Sbc,
+    /// Set Carry Flag
     Sec,
+    /// Set Decimal Flag
     Sed,
+    /// Set Interrupt Disable
     Sei,
     /// Store Accumulator
     Sta,
+    /// Store X Register
     Stx,
+    /// Store Y Register
     Sty,
+    /// Transfer Accumulator to X
     Tax,
+    /// Transfer Accumulator to Y
     Tay,
+    /// Transfer Stack Pointer to X
     Tsx,
+    /// Transfer X to Accumulator
     Txa,
+    /// Transfer X to Stack Pointer
     Txs,
+    /// Transfer Y to Accumulator
     Tya,
 }
 

@@ -11,7 +11,9 @@ fn test(regs: Regs) {
     };
     let mut cpu = Cpu::from_regs(regs);
     let mut bus = [0x00; 0x2000];
+    // prg rom
     bus[0x0000] = 0x60;
+    // stack
     bus[0x01FE] = 0xEE;
     bus[0x01FF] = 0xBE;
 
