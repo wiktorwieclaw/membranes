@@ -3,7 +3,7 @@ use proptest::prelude::*;
 use test_strategy::proptest;
 
 #[proptest]
-fn zero(regs: Regs) {
+fn accumulator_zero(regs: Regs) {
     let regs = Regs {
         pc: 0x00,
         a: 0x00,
@@ -17,7 +17,6 @@ fn zero(regs: Regs) {
     prop_assert_eq!(
         cpu.regs(),
         Regs {
-            a: 0x00,
             pc: 0x01,
             flags: regs
                 .flags
@@ -29,10 +28,10 @@ fn zero(regs: Regs) {
 }
 
 #[proptest]
-fn carry_negative(regs: Regs) {
+fn accumulator_carry(regs: Regs) {
     let regs = Regs {
         pc: 0x00,
-        a: 0b1100_0000,
+        a: 0b1000_0001,
         ..regs
     };
     let mut cpu = Cpu::from_regs(regs);
@@ -43,13 +42,38 @@ fn carry_negative(regs: Regs) {
     prop_assert_eq!(
         cpu.regs(),
         Regs {
-            a: 0b1000_0000,
+            a: 0b0000_0010,
             pc: 0x01,
             flags: regs
                 .flags
-                .union(Flags::NEGATIVE | Flags::CARRY)
-                .difference(Flags::ZERO),
+                .union(Flags::CARRY)
+                .difference(Flags::ZERO | Flags::NEGATIVE),
             ..regs
         }
     );
+}
+
+#[proptest]
+fn memory_carry(regs: Regs) {
+    let regs = Regs {
+        pc: 0x00,
+        ..regs
+    };
+    let mut cpu = Cpu::from_regs(regs);
+    let mut bus = [0x06, 0x02, 0b1000_0001];
+
+    cpu.next(&mut bus);
+
+    prop_assert_eq!(
+        cpu.regs(),
+        Regs {
+            pc: 0x02,
+            flags: regs
+                .flags
+                .union(Flags::CARRY)
+                .difference(Flags::ZERO | Flags::NEGATIVE),
+            ..regs
+        }
+    );
+    prop_assert_eq!(bus[0x0002], 0b0000_0010);
 }

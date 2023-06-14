@@ -175,6 +175,8 @@ impl Cpu {
             (op::Mnemonic::Lda, None) => unreachable!(),
             (op::Mnemonic::Ldx, Some(address)) => ldx(address, regs, bus),
             (op::Mnemonic::Ldx, None) => unreachable!(),
+            (op::Mnemonic::Lsr, Some(address)) => lsr(address, regs, bus),
+            (op::Mnemonic::Lsr, None) => lsr_a(regs),
             (op::Mnemonic::Rts, Some(_)) => unreachable!(),
             (op::Mnemonic::Rts, None) => rts(regs, bus),
             (op::Mnemonic::Sta, Some(address)) => sta(address, regs, bus),
@@ -281,19 +283,21 @@ fn and(address: u16, regs: &mut Regs, bus: &mut impl Bus) {
 }
 
 fn asl_a(regs: &mut Regs) {
-    asl_impl(regs.a, regs);
+    regs.flags.set(Flags::CARRY, (regs.a >> 7) == 1);
+
+    regs.a = regs.a << 1;
+    regs.flags.set(Flags::ZERO, is_zero(regs.a));
+    regs.flags.set(Flags::NEGATIVE, is_negative(regs.a));
 }
 
 fn asl(address: u16, regs: &mut Regs, bus: &mut impl Bus) {
-    let operand = bus.read_u8(address);
-    asl_impl(operand, regs);
-}
-
-fn asl_impl(operand: u8, regs: &mut Regs) {
-    regs.a = operand << 1;
-    regs.flags.set(Flags::CARRY, (operand >> 7) == 1);
-    regs.flags.set(Flags::ZERO, is_zero(regs.a));
-    regs.flags.set(Flags::NEGATIVE, is_negative(regs.a));
+    let m = bus.read_u8(address);
+    regs.flags.set(Flags::CARRY, (m >> 7) == 1);
+    
+    let m = m << 1;
+    regs.flags.set(Flags::ZERO, is_zero(m));
+    regs.flags.set(Flags::NEGATIVE, is_negative(m));
+    bus.write_u8(address, m);
 }
 
 fn bcc(address: u16, regs: &mut Regs, bus: &mut impl Bus) {
@@ -426,6 +430,24 @@ fn ldx(address: u16, regs: &mut Regs, bus: &mut impl Bus) {
     regs.x = bus.read_u8(address);
     regs.flags.set(Flags::ZERO, is_zero(regs.x));
     regs.flags.set(Flags::NEGATIVE, is_negative(regs.x));
+}
+
+fn lsr_a(regs: &mut Regs) {
+    regs.flags.set(Flags::CARRY, regs.a & (1 << 0) != 0);
+
+    regs.a = regs.a >> 1;
+    regs.flags.set(Flags::ZERO, is_zero(regs.a));
+    regs.flags.set(Flags::NEGATIVE, is_negative(regs.a));
+}
+
+fn lsr(address: u16, regs: &mut Regs, bus: &mut impl Bus) {
+    let m = bus.read_u8(address);
+    regs.flags.set(Flags::CARRY, m & (1 << 0) != 0);
+
+    let m = m >> 1;
+    regs.flags.set(Flags::ZERO, is_zero(m));
+    regs.flags.set(Flags::NEGATIVE, is_negative(m));
+    bus.write_u8(address, m);
 }
 
 fn rts(regs: &mut Regs, bus: &mut impl Bus) {

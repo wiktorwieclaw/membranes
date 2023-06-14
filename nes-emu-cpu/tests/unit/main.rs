@@ -15,6 +15,7 @@ mod jmp;
 mod jsr;
 mod lda;
 mod ldx;
+mod lsr;
 mod rts;
 mod txa;
 // todo: mod sta;
