@@ -158,6 +158,10 @@ impl Cpu {
             (op::Mnemonic::Cpx, None) => unreachable!(),
             (op::Mnemonic::Cpy, Some(address)) => cpy(address, regs, bus),
             (op::Mnemonic::Cpy, None) => unreachable!(),
+            (op::Mnemonic::Dex, Some(_)) => unreachable!(),
+            (op::Mnemonic::Dex, None) => dex(regs),
+            (op::Mnemonic::Dey, Some(_)) => unreachable!(),
+            (op::Mnemonic::Dey, None) => dey(regs),
             (op::Mnemonic::Inx, Some(_)) => unreachable!(),
             (op::Mnemonic::Inx, None) => inx(regs),
             (op::Mnemonic::Iny, Some(_)) => unreachable!(),
@@ -363,6 +367,18 @@ fn cpy(address: u16, regs: &mut Regs, bus: &mut impl Bus) {
     regs.flags.set(Flags::ZERO, regs.y == m);
     regs.flags
         .set(Flags::NEGATIVE, is_negative(regs.y.wrapping_sub(m)));
+}
+
+fn dex(regs: &mut Regs) {
+    regs.x = regs.x.wrapping_sub(1);
+    regs.flags.set(Flags::ZERO, is_zero(regs.x));
+    regs.flags.set(Flags::NEGATIVE, is_negative(regs.x));
+}
+
+fn dey(regs: &mut Regs) {
+    regs.y = regs.y.wrapping_sub(1);
+    regs.flags.set(Flags::ZERO, is_zero(regs.y));
+    regs.flags.set(Flags::NEGATIVE, is_negative(regs.y));
 }
 
 fn inx(regs: &mut Regs) {
