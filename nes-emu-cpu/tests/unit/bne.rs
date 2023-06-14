@@ -10,11 +10,11 @@ fn no_zero(regs: Regs) {
         ..regs
     };
     let mut cpu = Cpu::from_regs(regs);
-    let mut bus = [0xF0, 0x05];
+    let mut bus = [0xD0, 0x05];
 
     cpu.next(&mut bus);
 
-    prop_assert_eq!(cpu.regs(), Regs { pc: 0x02, ..regs });
+    prop_assert_eq!(cpu.regs(), Regs { pc: 0x07, ..regs });
 }
 
 #[proptest]
@@ -25,9 +25,9 @@ fn zero(regs: Regs) {
         ..regs
     };
     let mut cpu = Cpu::from_regs(regs);
-    let mut bus = [0xF0, 0x05];
+    let mut bus = [0xD0, 0x05];
 
     cpu.next(&mut bus);
 
-    prop_assert_eq!(cpu.regs(), Regs { pc: 0x07, ..regs });
+    prop_assert_eq!(cpu.regs(), Regs { pc: 0x02, ..regs });
 }

@@ -135,6 +135,10 @@ impl Cpu {
             (op::Mnemonic::Bcs, None) => unreachable!(),
             (op::Mnemonic::Beq, Some(address)) => beq(address, regs, bus),
             (op::Mnemonic::Beq, None) => unreachable!(),
+            (op::Mnemonic::Bit, Some(address)) => bit(address, regs, bus),
+            (op::Mnemonic::Bit, None) => unreachable!(),
+            (op::Mnemonic::Bne, Some(address)) => bne(address, regs, bus),
+            (op::Mnemonic::Bne, None) => unreachable!(),
             (op::Mnemonic::Brk, Some(_)) => unreachable!(),
             (op::Mnemonic::Brk, None) => {
                 regs.flags.set(Flags::B_1, true);
@@ -160,7 +164,7 @@ impl Cpu {
             (op::Mnemonic::Rts, None) => rts(regs, bus),
             (op::Mnemonic::Sta, Some(address)) => sta(address, regs, bus),
             (op::Mnemonic::Sta, None) => unreachable!(),
-            _ => todo!(),
+            _ => todo!("{op:?}"),
         };
 
         (op, None)
@@ -291,6 +295,21 @@ fn bcs(address: u16, regs: &mut Regs, bus: &mut impl Bus) {
 
 fn beq(address: u16, regs: &mut Regs, bus: &mut impl Bus) {
     if regs.flags.contains(Flags::ZERO) {
+        let offset = bus.read_u8(address);
+        regs.pc = regs.pc.wrapping_add(offset.into());
+    }
+}
+
+fn bit(address: u16, regs: &mut Regs, bus: &mut impl Bus) {
+    let m = bus.read_u8(address);
+    let result = m & regs.a;
+    regs.flags.set(Flags::ZERO, result == 0);
+    regs.flags.set(Flags::OVERFLOW, result & (1 << 6) != 0);
+    regs.flags.set(Flags::NEGATIVE, result & (1 << 7) != 0);
+}
+
+fn bne(address: u16, regs: &mut Regs, bus: &mut impl Bus) {
+    if !regs.flags.contains(Flags::ZERO) {
         let offset = bus.read_u8(address);
         regs.pc = regs.pc.wrapping_add(offset.into());
     }

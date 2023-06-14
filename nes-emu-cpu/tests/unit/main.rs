@@ -4,6 +4,8 @@ mod asl;
 mod bcc;
 mod bcs;
 mod beq;
+mod bit;
+mod bne;
 mod cmp;
 mod jmp;
 mod jsr;
