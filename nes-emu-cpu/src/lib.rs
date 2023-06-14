@@ -121,7 +121,6 @@ impl Cpu {
         let (mnemonic, mode) = (op.mnemonic(), op.mode());
 
         let address = operand_address(mode, regs, bus);
-
         match (mnemonic, address) {
             (op::Mnemonic::Adc, Some(address)) => adc(address, regs, bus),
             (op::Mnemonic::Adc, None) => unreachable!(),
@@ -299,22 +298,22 @@ fn asl_impl(operand: u8, regs: &mut Regs) {
 
 fn bcc(address: u16, regs: &mut Regs, bus: &mut impl Bus) {
     if !regs.flags.contains(Flags::CARRY) {
-        let offset = bus.read_u8(address);
-        regs.pc = regs.pc.wrapping_add(offset.into());
+        let offset = bus.read_u8(address) as i8;
+        regs.pc = regs.pc.wrapping_add_signed(offset.into());
     }
 }
 
 fn bcs(address: u16, regs: &mut Regs, bus: &mut impl Bus) {
     if regs.flags.contains(Flags::CARRY) {
-        let offset = bus.read_u8(address);
-        regs.pc = regs.pc.wrapping_add(offset.into());
+        let offset = bus.read_u8(address) as i8;
+        regs.pc = regs.pc.wrapping_add_signed(offset.into());
     }
 }
 
 fn beq(address: u16, regs: &mut Regs, bus: &mut impl Bus) {
     if regs.flags.contains(Flags::ZERO) {
-        let offset = bus.read_u8(address);
-        regs.pc = regs.pc.wrapping_add(offset.into());
+        let offset = bus.read_u8(address) as i8;
+        regs.pc = regs.pc.wrapping_add_signed(offset.into());
     }
 }
 
@@ -328,15 +327,15 @@ fn bit(address: u16, regs: &mut Regs, bus: &mut impl Bus) {
 
 fn bne(address: u16, regs: &mut Regs, bus: &mut impl Bus) {
     if !regs.flags.contains(Flags::ZERO) {
-        let offset = bus.read_u8(address);
-        regs.pc = regs.pc.wrapping_add(offset.into());
+        let offset = bus.read_u8(address) as i8;
+        regs.pc = regs.pc.wrapping_add_signed(offset.into());
     }
 }
 
 fn bpl(address: u16, regs: &mut Regs, bus: &mut impl Bus) {
     if !regs.flags.contains(Flags::NEGATIVE) {
-        let offset = bus.read_u8(address);
-        regs.pc = regs.pc.wrapping_add(offset.into());
+        let offset = bus.read_u8(address) as i8;
+        regs.pc = regs.pc.wrapping_add_signed(offset.into());
     }
 }
 
