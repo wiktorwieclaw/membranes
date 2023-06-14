@@ -154,6 +154,14 @@ impl Cpu {
             (op::Mnemonic::Clv, None) => clv(regs),
             (op::Mnemonic::Cmp, Some(address)) => cmp(address, regs, bus),
             (op::Mnemonic::Cmp, None) => unreachable!(),
+            (op::Mnemonic::Cpx, Some(address)) => cpx(address, regs, bus),
+            (op::Mnemonic::Cpx, None) => unreachable!(),
+            (op::Mnemonic::Cpy, Some(address)) => cpy(address, regs, bus),
+            (op::Mnemonic::Cpy, None) => unreachable!(),
+            (op::Mnemonic::Inx, Some(_)) => unreachable!(),
+            (op::Mnemonic::Inx, None) => inx(regs),
+            (op::Mnemonic::Iny, Some(_)) => unreachable!(),
+            (op::Mnemonic::Iny, None) => iny(regs),
             (op::Mnemonic::Jmp, Some(address)) => jmp(address, regs),
             (op::Mnemonic::Jmp, None) => unreachable!(),
             (op::Mnemonic::Jsr, Some(address)) => jsr(address, regs, bus),
@@ -339,6 +347,34 @@ fn cmp(address: u16, regs: &mut Regs, bus: &mut impl Bus) {
     regs.flags.set(Flags::ZERO, regs.a == m);
     regs.flags
         .set(Flags::NEGATIVE, is_negative(regs.a.wrapping_sub(m)));
+}
+
+fn cpx(address: u16, regs: &mut Regs, bus: &mut impl Bus) {
+    let m = bus.read_u8(address);
+    regs.flags.set(Flags::CARRY, regs.x >= m);
+    regs.flags.set(Flags::ZERO, regs.x == m);
+    regs.flags
+        .set(Flags::NEGATIVE, is_negative(regs.x.wrapping_sub(m)));
+}
+
+fn cpy(address: u16, regs: &mut Regs, bus: &mut impl Bus) {
+    let m = bus.read_u8(address);
+    regs.flags.set(Flags::CARRY, regs.y >= m);
+    regs.flags.set(Flags::ZERO, regs.y == m);
+    regs.flags
+        .set(Flags::NEGATIVE, is_negative(regs.y.wrapping_sub(m)));
+}
+
+fn inx(regs: &mut Regs) {
+    regs.x = regs.x.wrapping_add(1);
+    regs.flags.set(Flags::ZERO, is_zero(regs.x));
+    regs.flags.set(Flags::NEGATIVE, is_negative(regs.x));
+}
+
+fn iny(regs: &mut Regs) {
+    regs.y = regs.y.wrapping_add(1);
+    regs.flags.set(Flags::ZERO, is_zero(regs.y));
+    regs.flags.set(Flags::NEGATIVE, is_negative(regs.y));
 }
 
 fn jmp(address: u16, regs: &mut Regs) {
