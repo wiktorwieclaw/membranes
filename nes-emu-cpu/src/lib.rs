@@ -90,7 +90,7 @@ where
 
 #[derive(Default)]
 pub struct Cpu {
-    regs: Regs,
+    pub regs: Regs,
 }
 
 pub enum SideEffect {
@@ -116,7 +116,7 @@ impl Cpu {
         let opcode = bus.read_u8(regs.pc);
         regs.pc = regs.pc.wrapping_add(1);
 
-        let op = Op::parse(opcode);
+        let op = Op::parse(opcode).expect("Unsupported opcode");
 
         let (mnemonic, mode) = (op.mnemonic(), op.mode());
 
@@ -169,7 +169,7 @@ impl Cpu {
 
 fn operand_address(mode: op::Mode, regs: &mut Regs, bus: &mut impl Bus) -> Option<u16> {
     match mode {
-        op::Mode::Implicit | op::Mode::Accumulator => None,
+        op::Mode::Implied | op::Mode::Accumulator => None,
 
         op::Mode::Immediate | op::Mode::Relative => {
             let operand = regs.pc;

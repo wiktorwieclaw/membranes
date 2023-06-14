@@ -22,9 +22,7 @@ fn main() {
         0xea, 0xca, 0xd0, 0xfb, 0x60
     ];
     let mut mem = [0x00; 0xFFFF];
-    for (i, &b) in code.iter().enumerate() {
-        mem[0x0600 + i] = b;
-    }
+    mem[0x0600..][..code.len()].copy_from_slice(&code);
 
     let regs = nes_emu_cpu::Regs { pc: 0x0600, sp: 0xFF, ..Default::default() };
     let mut cpu = nes_emu_cpu::Cpu::from_regs(regs);
