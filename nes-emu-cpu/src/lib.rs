@@ -139,6 +139,8 @@ impl Cpu {
             (op::Mnemonic::Bit, None) => unreachable!(),
             (op::Mnemonic::Bne, Some(address)) => bne(address, regs, bus),
             (op::Mnemonic::Bne, None) => unreachable!(),
+            (op::Mnemonic::Bpl, Some(address)) => bpl(address, regs, bus),
+            (op::Mnemonic::Bpl, None) => unreachable!(),
             (op::Mnemonic::Brk, Some(_)) => unreachable!(),
             (op::Mnemonic::Brk, None) => {
                 regs.flags.set(Flags::B_1, true);
@@ -326,6 +328,13 @@ fn bit(address: u16, regs: &mut Regs, bus: &mut impl Bus) {
 
 fn bne(address: u16, regs: &mut Regs, bus: &mut impl Bus) {
     if !regs.flags.contains(Flags::ZERO) {
+        let offset = bus.read_u8(address);
+        regs.pc = regs.pc.wrapping_add(offset.into());
+    }
+}
+
+fn bpl(address: u16, regs: &mut Regs, bus: &mut impl Bus) {
+    if !regs.flags.contains(Flags::NEGATIVE) {
         let offset = bus.read_u8(address);
         regs.pc = regs.pc.wrapping_add(offset.into());
     }
