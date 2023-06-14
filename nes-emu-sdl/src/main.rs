@@ -1,4 +1,4 @@
-//! code taken from https://bugzmanov.github.io/nes_ebook/chapter_3_4.html
+//! parts of the code taken from https://bugzmanov.github.io/nes_ebook/chapter_3_4.html
 
 use nes_emu_cpu::{Bus, SideEffect};
 use rand::Rng;
@@ -26,11 +26,11 @@ fn main() {
     let mut rng = rand::thread_rng();
 
     let rom = std::fs::read("freeware/snake.nes").unwrap();
-    let rom = nes_emu_rom::parse(&rom[..rom.len() - 1]);
+    let rom = nes_emu_rom::parse(&rom);
     let mut nes = nes_emu::Nes::default();
+    nes.load(&rom.prg_rom);
     nes.cpu.regs.pc = 0x8600;
     nes.cpu.regs.sp = 0xFF;
-    nes.bus.prg_rom.copy_from_slice(&rom.prg_rom);
 
     loop {
         handle_user_input(&mut nes.bus, &mut event_pump);
