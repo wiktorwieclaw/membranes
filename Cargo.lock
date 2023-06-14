@@ -117,6 +117,7 @@ version = "0.1.0"
 dependencies = [
  "nes-emu-cpu",
  "nes-emu-gamepad",
+ "nes-emu-rom",
 ]
 
 [[package]]
@@ -131,19 +132,25 @@ dependencies = [
 ]
 
 [[package]]
-name = "nes-emu-cpu-snake"
-version = "0.1.0"
-dependencies = [
- "nes-emu-cpu",
- "rand 0.7.3",
- "sdl2",
-]
-
-[[package]]
 name = "nes-emu-gamepad"
 version = "0.1.0"
 dependencies = [
  "bitflags",
+]
+
+[[package]]
+name = "nes-emu-rom"
+version = "0.1.0"
+
+[[package]]
+name = "nes-emu-sdl"
+version = "0.1.0"
+dependencies = [
+ "nes-emu",
+ "nes-emu-cpu",
+ "nes-emu-rom",
+ "rand 0.7.3",
+ "sdl2",
 ]
 
 [[package]]

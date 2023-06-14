@@ -19,9 +19,7 @@ fn positive(regs: Regs) {
         Regs {
             pc: 0x01,
             x: 0x01,
-            flags: regs
-                .flags
-                .difference(Flags::NEGATIVE | Flags::ZERO),
+            flags: regs.flags.difference(Flags::NEGATIVE | Flags::ZERO),
             ..regs
         }
     );
@@ -44,10 +42,7 @@ fn zero(regs: Regs) {
         Regs {
             pc: 0x01,
             x: 0x00,
-            flags: regs
-                .flags
-                .union(Flags::ZERO)
-                .difference(Flags::NEGATIVE),
+            flags: regs.flags.union(Flags::ZERO).difference(Flags::NEGATIVE),
             ..regs
         }
     );
@@ -70,10 +65,7 @@ fn negative(regs: Regs) {
         Regs {
             pc: 0x01,
             x: 0b1000_0001,
-            flags: regs
-                .flags
-                .union(Flags::NEGATIVE)
-                .difference(Flags::ZERO),
+            flags: regs.flags.union(Flags::NEGATIVE).difference(Flags::ZERO),
             ..regs
         }
     );

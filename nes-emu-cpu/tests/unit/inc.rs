@@ -4,10 +4,7 @@ use test_strategy::proptest;
 
 #[proptest]
 fn positive(regs: Regs) {
-    let regs = Regs {
-        pc: 0x00,
-        ..regs
-    };
+    let regs = Regs { pc: 0x00, ..regs };
     let mut cpu = Cpu::from_regs(regs);
     let mut bus = [0xE6, 0x02, 0x00];
 
@@ -26,10 +23,7 @@ fn positive(regs: Regs) {
 
 #[proptest]
 fn zero(regs: Regs) {
-    let regs = Regs {
-        pc: 0x00,
-        ..regs
-    };
+    let regs = Regs { pc: 0x00, ..regs };
     let mut cpu = Cpu::from_regs(regs);
     let mut bus = [0xE6, 0x02, 0xFF];
 
@@ -48,10 +42,7 @@ fn zero(regs: Regs) {
 
 #[proptest]
 fn negative(regs: Regs) {
-    let regs = Regs {
-        pc: 0x00,
-        ..regs
-    };
+    let regs = Regs { pc: 0x00, ..regs };
     let mut cpu = Cpu::from_regs(regs);
     let mut bus = [0xE6, 0x02, 0b1000_0000];
 

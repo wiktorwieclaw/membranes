@@ -3,5 +3,6 @@ members = [
     "nes-emu",
     "nes-emu-cpu",
     "nes-emu-gamepad",
-    "nes-emu-cpu-snake"
+    "nes-emu-rom",
+    "nes-emu-sdl",
 ]

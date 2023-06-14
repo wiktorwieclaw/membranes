@@ -4,10 +4,7 @@ use test_strategy::proptest;
 
 #[proptest]
 fn positive(regs: Regs) {
-    let regs = Regs {
-        pc: 0x00,
-        ..regs
-    };
+    let regs = Regs { pc: 0x00, ..regs };
     let mut cpu = Cpu::from_regs(regs);
     let mut bus = [0xC6, 0x02, 0x02];
 
@@ -17,9 +14,7 @@ fn positive(regs: Regs) {
         cpu.regs(),
         Regs {
             pc: 0x02,
-            flags: regs
-                .flags
-                .difference(Flags::NEGATIVE | Flags::ZERO),
+            flags: regs.flags.difference(Flags::NEGATIVE | Flags::ZERO),
             ..regs
         }
     );
@@ -27,10 +22,7 @@ fn positive(regs: Regs) {
 
 #[proptest]
 fn zero(regs: Regs) {
-    let regs = Regs {
-        pc: 0x00,
-        ..regs
-    };
+    let regs = Regs { pc: 0x00, ..regs };
     let mut cpu = Cpu::from_regs(regs);
     let mut bus = [0xC6, 0x02, 0x01];
 
@@ -40,10 +32,7 @@ fn zero(regs: Regs) {
         cpu.regs(),
         Regs {
             pc: 0x02,
-            flags: regs
-                .flags
-                .union(Flags::ZERO)
-                .difference(Flags::NEGATIVE),
+            flags: regs.flags.union(Flags::ZERO).difference(Flags::NEGATIVE),
             ..regs
         }
     );
@@ -51,10 +40,7 @@ fn zero(regs: Regs) {
 
 #[proptest]
 fn negative(regs: Regs) {
-    let regs = Regs {
-        pc: 0x00,
-        ..regs
-    };
+    let regs = Regs { pc: 0x00, ..regs };
     let mut cpu = Cpu::from_regs(regs);
     let mut bus = [0xC6, 0x02, 0x00];
 
@@ -64,10 +50,7 @@ fn negative(regs: Regs) {
         cpu.regs(),
         Regs {
             pc: 0x02,
-            flags: regs
-                .flags
-                .union(Flags::NEGATIVE)
-                .difference(Flags::ZERO),
+            flags: regs.flags.union(Flags::NEGATIVE).difference(Flags::ZERO),
             ..regs
         }
     );
