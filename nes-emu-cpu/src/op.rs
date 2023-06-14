@@ -290,6 +290,7 @@ impl Op {
             0xAA => (Mnemonic::Tax, Mode::Implied, 2),
             0xA8 => (Mnemonic::Tay, Mode::Implied, 2),
             0xBA => (Mnemonic::Tsx, Mode::Implied, 2),
+            0x8A => (Mnemonic::Txa, Mode::Implied, 2),
             0x9A => (Mnemonic::Txs, Mode::Implied, 2),
             0x98 => (Mnemonic::Tya, Mode::Implied, 2),
             _ => return None,

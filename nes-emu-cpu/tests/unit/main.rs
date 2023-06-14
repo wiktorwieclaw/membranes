@@ -16,6 +16,7 @@ mod jsr;
 mod lda;
 mod ldx;
 mod rts;
+mod txa;
 // todo: mod sta;
 
 mod strategy;

@@ -116,7 +116,7 @@ impl Cpu {
         let opcode = bus.read_u8(regs.pc);
         regs.pc = regs.pc.wrapping_add(1);
 
-        let op = Op::parse(opcode).expect("Unsupported opcode");
+        let op = Op::parse(opcode).expect(&format!("Unsupported opcode: {opcode:x}"));
 
         let (mnemonic, mode) = (op.mnemonic(), op.mode());
 
@@ -178,6 +178,8 @@ impl Cpu {
             (op::Mnemonic::Rts, None) => rts(regs, bus),
             (op::Mnemonic::Sta, Some(address)) => sta(address, regs, bus),
             (op::Mnemonic::Sta, None) => unreachable!(),
+            (op::Mnemonic::Txa, Some(_)) => unreachable!(),
+            (op::Mnemonic::Txa, None) => txa(regs),
             _ => todo!("{op:?}"),
         };
 
@@ -427,6 +429,12 @@ fn rts(regs: &mut Regs, bus: &mut impl Bus) {
 
 fn sta(address: u16, regs: &Regs, bus: &mut impl Bus) {
     bus.write_u8(address, regs.a)
+}
+
+fn txa(regs: &mut Regs) {
+    regs.a = regs.x;
+    regs.flags.set(Flags::ZERO, is_zero(regs.a));
+    regs.flags.set(Flags::NEGATIVE, is_negative(regs.a));
 }
 
 fn is_zero(n: u8) -> bool {
