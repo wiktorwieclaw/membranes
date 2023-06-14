@@ -160,6 +160,8 @@ impl Cpu {
             (op::Mnemonic::Jsr, None) => unreachable!(),
             (op::Mnemonic::Lda, Some(address)) => lda(address, regs, bus),
             (op::Mnemonic::Lda, None) => unreachable!(),
+            (op::Mnemonic::Ldx, Some(address)) => ldx(address, regs, bus),
+            (op::Mnemonic::Ldx, None) => unreachable!(),
             (op::Mnemonic::Rts, Some(_)) => unreachable!(),
             (op::Mnemonic::Rts, None) => rts(regs, bus),
             (op::Mnemonic::Sta, Some(address)) => sta(address, regs, bus),
@@ -356,6 +358,12 @@ fn lda(address: u16, regs: &mut Regs, bus: &mut impl Bus) {
     regs.a = bus.read_u8(address);
     regs.flags.set(Flags::ZERO, is_zero(regs.a));
     regs.flags.set(Flags::NEGATIVE, is_negative(regs.a));
+}
+
+fn ldx(address: u16, regs: &mut Regs, bus: &mut impl Bus) {
+    regs.x = bus.read_u8(address);
+    regs.flags.set(Flags::ZERO, is_zero(regs.x));
+    regs.flags.set(Flags::NEGATIVE, is_negative(regs.x));
 }
 
 fn rts(regs: &mut Regs, bus: &mut impl Bus) {

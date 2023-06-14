@@ -10,6 +10,7 @@ mod cmp;
 mod jmp;
 mod jsr;
 mod lda;
+mod ldx;
 mod rts;
 // todo: mod sta;
 
