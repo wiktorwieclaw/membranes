@@ -116,7 +116,7 @@ name = "nes-emu"
 version = "0.1.0"
 dependencies = [
  "nes-emu-cpu",
- "nes-emu-joypad",
+ "nes-emu-gamepad",
 ]
 
 [[package]]
@@ -140,7 +140,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "nes-emu-joypad"
+name = "nes-emu-gamepad"
 version = "0.1.0"
 dependencies = [
  "bitflags",

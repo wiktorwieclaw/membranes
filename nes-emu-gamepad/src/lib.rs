@@ -15,12 +15,12 @@ bitflags! {
 }
 
 #[derive(Default)]
-pub struct Joypad {
+pub struct Gamepad {
     _is_strobe: bool,
     button_status_flags: ButtonFlags,
 }
 
-impl Joypad {
+impl Gamepad {
     pub fn new() -> Self {
         Default::default()
     }
