@@ -18,7 +18,10 @@ fn zero(regs: Regs) {
         cpu.regs(),
         Regs {
             pc: 0x02,
-            flags: regs.flags.union(Flags::ZERO).difference(Flags::NEGATIVE | Flags::OVERFLOW),
+            flags: regs
+                .flags
+                .union(Flags::ZERO)
+                .difference(Flags::NEGATIVE | Flags::OVERFLOW),
             ..regs
         }
     );
@@ -40,7 +43,10 @@ fn overflow(regs: Regs) {
         cpu.regs(),
         Regs {
             pc: 0x02,
-            flags: regs.flags.union(Flags::OVERFLOW).difference(Flags::NEGATIVE | Flags::ZERO),
+            flags: regs
+                .flags
+                .union(Flags::OVERFLOW)
+                .difference(Flags::NEGATIVE | Flags::ZERO),
             ..regs
         }
     );
@@ -62,7 +68,10 @@ fn negative(regs: Regs) {
         cpu.regs(),
         Regs {
             pc: 0x02,
-            flags: regs.flags.union(Flags::NEGATIVE).difference(Flags::ZERO | Flags::OVERFLOW),
+            flags: regs
+                .flags
+                .union(Flags::NEGATIVE)
+                .difference(Flags::ZERO | Flags::OVERFLOW),
             ..regs
         }
     );
