@@ -16,7 +16,7 @@ bitflags! {
 
 #[derive(Default)]
 pub struct Joypad {
-    is_strobe: bool,
+    _is_strobe: bool,
     button_status_flags: ButtonFlags,
 }
 
@@ -38,7 +38,7 @@ impl Joypad {
         0
     }
 
-    pub fn write_u8(&mut self, data: u8) {
+    pub fn write_u8(&mut self, _data: u8) {
         // TODO
     }
 }

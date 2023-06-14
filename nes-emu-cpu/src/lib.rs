@@ -116,7 +116,7 @@ impl Cpu {
         let opcode = bus.read_u8(regs.pc);
         regs.pc = regs.pc.wrapping_add(1);
 
-        let op = Op::parse(opcode).expect(&format!("Unsupported opcode: {opcode:x}"));
+        let op = Op::parse(opcode).unwrap_or_else(|| panic!("Unsupported opcode: {opcode:x}"));
 
         let (mnemonic, mode) = (op.mnemonic(), op.mode());
 
@@ -297,7 +297,7 @@ fn and(address: u16, regs: &mut Regs, bus: &mut impl Bus) {
 fn asl_a(regs: &mut Regs) {
     regs.flags.set(Flags::CARRY, (regs.a >> 7) == 1);
 
-    regs.a = regs.a << 1;
+    regs.a <<= 1;
     regs.flags.set(Flags::ZERO, is_zero(regs.a));
     regs.flags.set(Flags::NEGATIVE, is_negative(regs.a));
 }
@@ -469,7 +469,7 @@ fn ldy(address: u16, regs: &mut Regs, bus: &mut impl Bus) {
 fn lsr_a(regs: &mut Regs) {
     regs.flags.set(Flags::CARRY, regs.a & (1 << 0) != 0);
 
-    regs.a = regs.a >> 1;
+    regs.a >>= 1;
     regs.flags.set(Flags::ZERO, is_zero(regs.a));
     regs.flags.set(Flags::NEGATIVE, is_negative(regs.a));
 }

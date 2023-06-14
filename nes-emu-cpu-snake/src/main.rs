@@ -44,11 +44,11 @@ fn main() {
     let mut texture = creator
         .create_texture_target(sdl2::pixels::PixelFormatEnum::RGB24, 32, 32).unwrap();
 
-    let mut screen_state = [0 as u8; 32 * 3 * 32];
+    let mut screen_state = [0_u8; 32 * 3 * 32];
     let mut rng = rand::thread_rng();
 
     let mut mem = [0x00; 0xFFFF];
-    mem[0x0600..][..CODE.len()].copy_from_slice(&CODE);
+    mem[0x0600..][..CODE.len()].copy_from_slice(CODE);
 
     let regs = nes_emu_cpu::Regs {
         pc: 0x0600,
