@@ -55,10 +55,7 @@ fn accumulator_carry(regs: Regs) {
 
 #[proptest]
 fn memory_carry(regs: Regs) {
-    let regs = Regs {
-        pc: 0x00,
-        ..regs
-    };
+    let regs = Regs { pc: 0x00, ..regs };
     let mut cpu = Cpu::from_regs(regs);
     let mut bus = [0x46, 0x02, 0b0100_0001];
 

@@ -6,19 +6,17 @@ use test_strategy::proptest;
 fn positive(regs: Regs) {
     let regs = Regs {
         pc: 0x00,
-        x: 0x00,
         ..regs
     };
     let mut cpu = Cpu::from_regs(regs);
-    let mut bus = [0xE8];
+    let mut bus = [0xC6, 0x02, 0x02];
 
     cpu.next(&mut bus);
 
     prop_assert_eq!(
         cpu.regs(),
         Regs {
-            pc: 0x01,
-            x: 0x01,
+            pc: 0x02,
             flags: regs
                 .flags
                 .difference(Flags::NEGATIVE | Flags::ZERO),
@@ -31,19 +29,17 @@ fn positive(regs: Regs) {
 fn zero(regs: Regs) {
     let regs = Regs {
         pc: 0x00,
-        x: 0xFF,
         ..regs
     };
     let mut cpu = Cpu::from_regs(regs);
-    let mut bus = [0xE8];
+    let mut bus = [0xC6, 0x02, 0x01];
 
     cpu.next(&mut bus);
 
     prop_assert_eq!(
         cpu.regs(),
         Regs {
-            pc: 0x01,
-            x: 0x00,
+            pc: 0x02,
             flags: regs
                 .flags
                 .union(Flags::ZERO)
@@ -57,19 +53,17 @@ fn zero(regs: Regs) {
 fn negative(regs: Regs) {
     let regs = Regs {
         pc: 0x00,
-        x: 0b1000_0000,
         ..regs
     };
     let mut cpu = Cpu::from_regs(regs);
-    let mut bus = [0xE8];
+    let mut bus = [0xC6, 0x02, 0x00];
 
     cpu.next(&mut bus);
 
     prop_assert_eq!(
         cpu.regs(),
         Regs {
-            pc: 0x01,
-            x: 0b1000_0001,
+            pc: 0x02,
             flags: regs
                 .flags
                 .union(Flags::NEGATIVE)

@@ -159,10 +159,14 @@ impl Cpu {
             (op::Mnemonic::Cpx, None) => unreachable!(),
             (op::Mnemonic::Cpy, Some(address)) => cpy(address, regs, bus),
             (op::Mnemonic::Cpy, None) => unreachable!(),
+            (op::Mnemonic::Dec, Some(address)) => dec(address, regs, bus),
+            (op::Mnemonic::Dec, None) => unreachable!(),
             (op::Mnemonic::Dex, Some(_)) => unreachable!(),
             (op::Mnemonic::Dex, None) => dex(regs),
             (op::Mnemonic::Dey, Some(_)) => unreachable!(),
             (op::Mnemonic::Dey, None) => dey(regs),
+            (op::Mnemonic::Inc, Some(address)) => inc(address, regs, bus),
+            (op::Mnemonic::Inc, None) => unreachable!(),
             (op::Mnemonic::Inx, Some(_)) => unreachable!(),
             (op::Mnemonic::Inx, None) => inx(regs),
             (op::Mnemonic::Iny, Some(_)) => unreachable!(),
@@ -171,14 +175,22 @@ impl Cpu {
             (op::Mnemonic::Jmp, None) => unreachable!(),
             (op::Mnemonic::Jsr, Some(address)) => jsr(address, regs, bus),
             (op::Mnemonic::Jsr, None) => unreachable!(),
+            (op::Mnemonic::Nop, Some(_)) => unreachable!(),
+            (op::Mnemonic::Nop, None) => nop(),
             (op::Mnemonic::Lda, Some(address)) => lda(address, regs, bus),
             (op::Mnemonic::Lda, None) => unreachable!(),
             (op::Mnemonic::Ldx, Some(address)) => ldx(address, regs, bus),
             (op::Mnemonic::Ldx, None) => unreachable!(),
+            (op::Mnemonic::Ldy, Some(address)) => ldy(address, regs, bus),
+            (op::Mnemonic::Ldy, None) => unreachable!(),
             (op::Mnemonic::Lsr, Some(address)) => lsr(address, regs, bus),
             (op::Mnemonic::Lsr, None) => lsr_a(regs),
             (op::Mnemonic::Rts, Some(_)) => unreachable!(),
             (op::Mnemonic::Rts, None) => rts(regs, bus),
+            (op::Mnemonic::Sbc, Some(address)) => sbc(address, regs, bus),
+            (op::Mnemonic::Sbc, None) => unreachable!(),
+            (op::Mnemonic::Sec, Some(_)) => unreachable!(),
+            (op::Mnemonic::Sec, None) => sec(regs),
             (op::Mnemonic::Sta, Some(address)) => sta(address, regs, bus),
             (op::Mnemonic::Sta, None) => unreachable!(),
             (op::Mnemonic::Txa, Some(_)) => unreachable!(),
@@ -293,7 +305,7 @@ fn asl_a(regs: &mut Regs) {
 fn asl(address: u16, regs: &mut Regs, bus: &mut impl Bus) {
     let m = bus.read_u8(address);
     regs.flags.set(Flags::CARRY, (m >> 7) == 1);
-    
+
     let m = m << 1;
     regs.flags.set(Flags::ZERO, is_zero(m));
     regs.flags.set(Flags::NEGATIVE, is_negative(m));
@@ -383,6 +395,14 @@ fn cpy(address: u16, regs: &mut Regs, bus: &mut impl Bus) {
         .set(Flags::NEGATIVE, is_negative(regs.y.wrapping_sub(m)));
 }
 
+fn dec(address: u16, regs: &mut Regs, bus: &mut impl Bus) {
+    let m = bus.read_u8(address);
+    let m = m.wrapping_sub(1);
+    regs.flags.set(Flags::ZERO, is_zero(m));
+    regs.flags.set(Flags::NEGATIVE, is_negative(m));
+    bus.write_u8(address, m);
+}
+
 fn dex(regs: &mut Regs) {
     regs.x = regs.x.wrapping_sub(1);
     regs.flags.set(Flags::ZERO, is_zero(regs.x));
@@ -393,6 +413,14 @@ fn dey(regs: &mut Regs) {
     regs.y = regs.y.wrapping_sub(1);
     regs.flags.set(Flags::ZERO, is_zero(regs.y));
     regs.flags.set(Flags::NEGATIVE, is_negative(regs.y));
+}
+
+fn inc(address: u16, regs: &mut Regs, bus: &mut impl Bus) {
+    let m = bus.read_u8(address);
+    let m = m.wrapping_add(1);
+    regs.flags.set(Flags::ZERO, is_zero(m));
+    regs.flags.set(Flags::NEGATIVE, is_negative(m));
+    bus.write_u8(address, m);
 }
 
 fn inx(regs: &mut Regs) {
@@ -432,6 +460,12 @@ fn ldx(address: u16, regs: &mut Regs, bus: &mut impl Bus) {
     regs.flags.set(Flags::NEGATIVE, is_negative(regs.x));
 }
 
+fn ldy(address: u16, regs: &mut Regs, bus: &mut impl Bus) {
+    regs.y = bus.read_u8(address);
+    regs.flags.set(Flags::ZERO, is_zero(regs.y));
+    regs.flags.set(Flags::NEGATIVE, is_negative(regs.y));
+}
+
 fn lsr_a(regs: &mut Regs) {
     regs.flags.set(Flags::CARRY, regs.a & (1 << 0) != 0);
 
@@ -450,11 +484,29 @@ fn lsr(address: u16, regs: &mut Regs, bus: &mut impl Bus) {
     bus.write_u8(address, m);
 }
 
+fn nop() {}
+
 fn rts(regs: &mut Regs, bus: &mut impl Bus) {
     regs.pc = bus
         .read_u16_be(STACK_START.wrapping_add(regs.sp.wrapping_add(1).into()))
         .wrapping_add(1);
     regs.sp = regs.sp.wrapping_add(2);
+}
+
+fn sbc(address: u16, regs: &mut Regs, bus: &mut impl Bus) {
+    let m = bus.read_u8(address);
+    let c = !regs.flags.contains(Flags::CARRY) as u8;
+    let result = regs.a.wrapping_sub(m).wrapping_sub(c);
+    let is_overflow = is_signed_overflow(m, regs.a, result);
+    regs.flags.set(Flags::CARRY, !is_overflow);
+    regs.flags.set(Flags::ZERO, is_zero(result));
+    regs.flags.set(Flags::OVERFLOW, is_overflow);
+    regs.flags.set(Flags::NEGATIVE, is_negative(result));
+    regs.a = result;
+}
+
+fn sec(regs: &mut Regs) {
+    regs.flags.insert(Flags::CARRY)
 }
 
 fn sta(address: u16, regs: &Regs, bus: &mut impl Bus) {
