@@ -1,9 +1,9 @@
 [workspace]
 members = [
-    "nes-emu",
-    "nes-emu-cpu",
-    "nes-emu-gamepad",
-    "nes-emu-rom",
-    "nes-emu-sdl",
-    "nes-emu-wasm",
+    "membranes",
+    "membranes-cpu",
+    "membranes-gamepad",
+    "membranes-rom",
+    "membranes-sdl",
+    "membranes-wasm",
 ]

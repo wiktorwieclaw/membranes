@@ -1,0 +1,14 @@
+[package]
+name = "membranes-sdl"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+membranes = { path = "../membranes" }
+membranes-cpu = { path = "../membranes-cpu" }
+membranes-rom = { path = "../membranes-rom" }
+sdl2 = { version = "0.34.0" }
+rand = "=0.7.3"
+

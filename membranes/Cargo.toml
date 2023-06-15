@@ -1,0 +1,11 @@
+[package]
+name = "membranes"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+membranes-cpu = { path = "../membranes-cpu" }
+membranes-gamepad = { path = "../membranes-gamepad" }
+membranes-rom = { path = "../membranes-rom" }

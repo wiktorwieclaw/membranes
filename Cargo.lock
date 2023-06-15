@@ -124,52 +124,52 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b06a4cde4c0f271a446782e3eff8de789548ce57dbc8eca9292c27f4a42004b4"
 
 [[package]]
-name = "nes-emu"
+name = "membranes"
 version = "0.1.0"
 dependencies = [
- "nes-emu-cpu",
- "nes-emu-gamepad",
- "nes-emu-rom",
+ "membranes-cpu",
+ "membranes-gamepad",
+ "membranes-rom",
 ]
 
 [[package]]
-name = "nes-emu-cpu"
+name = "membranes-cpu"
 version = "0.1.0"
 dependencies = [
  "bitflags",
- "nes-emu-cpu",
+ "membranes-cpu",
  "proptest",
  "proptest-derive",
  "test-strategy",
 ]
 
 [[package]]
-name = "nes-emu-gamepad"
+name = "membranes-gamepad"
 version = "0.1.0"
 dependencies = [
  "bitflags",
 ]
 
 [[package]]
-name = "nes-emu-rom"
+name = "membranes-rom"
 version = "0.1.0"
 
 [[package]]
-name = "nes-emu-sdl"
+name = "membranes-sdl"
 version = "0.1.0"
 dependencies = [
- "nes-emu",
- "nes-emu-cpu",
- "nes-emu-rom",
+ "membranes",
+ "membranes-cpu",
+ "membranes-rom",
  "rand 0.7.3",
  "sdl2",
 ]
 
 [[package]]
-name = "nes-emu-wasm"
+name = "membranes-wasm"
 version = "0.1.0"
 dependencies = [
- "nes-emu",
+ "membranes",
  "wasm-bindgen",
 ]
 
