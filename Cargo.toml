@@ -5,4 +5,5 @@ members = [
     "nes-emu-gamepad",
     "nes-emu-rom",
     "nes-emu-sdl",
+    "nes-emu-wasm",
 ]

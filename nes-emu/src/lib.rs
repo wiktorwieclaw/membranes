@@ -25,14 +25,15 @@ impl Nes {
         Default::default()
     }
 
-    pub fn load(&mut self, program: &[u8; 0x7FFF]) {
-        self.bus.prg_rom.copy_from_slice(&program[..]);
+    /// Returns Err if the program is too long to fit into prg_rom.
+    pub fn load(&mut self, program: &[u8]) -> Result<(), ()> {
+        let rom = self.bus.prg_rom.get_mut(..program.len()).ok_or(())?;
+        rom.copy_from_slice(&program[..]);
+        Ok(())
     }
 
-    pub fn run(&mut self) {
-        loop {
-            self.cpu.next(&mut self.bus);
-        }
+    pub fn next(&mut self) {
+        self.cpu.next(&mut self.bus);
     }
 }
 

@@ -28,7 +28,7 @@ fn main() {
     let rom = std::fs::read("freeware/snake.nes").unwrap();
     let rom = nes_emu_rom::parse_ines(&rom).unwrap();
     let mut nes = nes_emu::Nes::default();
-    nes.load(&rom.prg_rom);
+    nes.load(&rom.prg_rom).unwrap();
     nes.cpu.regs.pc = 0x8600;
     nes.cpu.regs.sp = 0xFF;
 
