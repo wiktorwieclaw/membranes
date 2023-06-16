@@ -5,5 +5,4 @@ members = [
     "membranes-gamepad",
     "membranes-rom",
     "membranes-sdl",
-    "membranes-wasm",
 ]

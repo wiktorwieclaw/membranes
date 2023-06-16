@@ -1,6 +1,13 @@
 use membranes_cpu::Cpu;
 use membranes_gamepad::Gamepad;
+#[cfg(target_arch = "wasm")]
+use wasm_bindgen::wasm_bindgen;
 
+pub use membranes_cpu as cpu;
+pub use membranes_gamepad as gamepad;
+pub use membranes_rom as rom;
+
+#[cfg_attr(target_arch = "wasm", wasm_bindgen)]
 pub struct Nes {
     pub cpu: Cpu,
     pub bus: Bus,
@@ -21,6 +28,7 @@ impl Default for Nes {
 }
 
 impl Nes {
+    #[cfg_attr(target_arch = "wasm", wasm_bindgen(constructor))]
     pub fn new() -> Self {
         Default::default()
     }
@@ -37,6 +45,7 @@ impl Nes {
     }
 }
 
+#[cfg_attr(target_arch = "wasm", wasm_bindgen)]
 pub struct Bus {
     pub ram: [u8; 0x2000],
     pub prg_rom: [u8; 0x7FFF],

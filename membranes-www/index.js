@@ -1,6 +1,6 @@
-import init, { Nes } from "./pkg/membranes_wasm.js";
+import init, * as membranes from "./pkg/membranes_wasm.js";
 
 await init("./pkg/membranes_wasm_bg.wasm");
 
-let nes = new Nes();
+let nes = new membranes.Nes();
 console.log(nes);

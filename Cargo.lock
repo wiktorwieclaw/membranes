@@ -130,6 +130,7 @@ dependencies = [
  "membranes-cpu",
  "membranes-gamepad",
  "membranes-rom",
+ "wasm-bindgen",
 ]
 
 [[package]]
@@ -141,6 +142,7 @@ dependencies = [
  "proptest",
  "proptest-derive",
  "test-strategy",
+ "wasm-bindgen",
 ]
 
 [[package]]
@@ -163,14 +165,6 @@ dependencies = [
  "membranes-rom",
  "rand 0.7.3",
  "sdl2",
-]
-
-[[package]]
-name = "membranes-wasm"
-version = "0.1.0"
-dependencies = [
- "membranes",
- "wasm-bindgen",
 ]
 
 [[package]]

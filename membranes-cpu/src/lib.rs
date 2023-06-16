@@ -1,6 +1,8 @@
 use bitflags::bitflags;
 use op::Op;
 use std::ops::IndexMut;
+#[cfg(target_arch = "wasm")]
+use wasm_bindgen::wasm_bindgen;
 
 pub mod op;
 
@@ -9,6 +11,7 @@ const STACK_START: u16 = 0x0100;
 /// Registers
 #[derive(Default, Debug, PartialEq, Eq, Clone, Copy)]
 #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
+#[cfg_attr(target_arch = "wasm", wasm_bindgen)]
 pub struct Regs {
     /// Accumulator
     pub a: u8,
@@ -27,6 +30,7 @@ pub struct Regs {
 bitflags! {
     #[derive(Default)]
     #[cfg_attr(feature = "proptest", derive(proptest_derive::Arbitrary))]
+    #[cfg_attr(target_arch = "wasm", wasm_bindgen)]
     pub struct Flags: u8 {
         // Unsigned carry
         const CARRY = 0b0000_0001;
@@ -89,6 +93,7 @@ where
 }
 
 #[derive(Default)]
+#[cfg_attr(target_arch = "wasm", wasm_bindgen)]
 pub struct Cpu {
     pub regs: Regs,
 }
