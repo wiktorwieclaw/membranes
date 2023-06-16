@@ -10,14 +10,12 @@ impl Nes {
         Nes(membranes::Nes::new())
     }
 
-    #[wasm_bindgen]
     pub fn load(&mut self, program: &[u8]) -> Result<(), String> {
         self.0
             .load(program)
             .map_err(|()| "Program is too long to fit into prg_rom".into())
     }
 
-    #[wasm_bindgen]
     pub fn next(&mut self) {
         self.0.next()        
     }
