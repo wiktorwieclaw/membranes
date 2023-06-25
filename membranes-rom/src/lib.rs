@@ -1,36 +1,41 @@
-pub struct Rom {
-    pub prg_rom: [u8; 0x7FFF],
+pub const PRG_ROM_PAGE_LEN: usize = 16384;
+
+pub struct INesV1<'a> {
+    bytes: &'a [u8],
+}
+
+impl INesV1<'_> {
+    pub fn parse(bytes: &[u8]) -> Result<INesV1, ParseError> {
+        if bytes.len() < 16 {
+            return Err(ParseError::Header);
+        }
+
+        if &bytes[..4] != b"NES\x1A" {
+            return Err(ParseError::Header);
+        }
+
+        // TODO: "assert length"
+
+        Ok(INesV1 { bytes })
+    }
+
+    pub fn prg_rom_npages(&self) -> u8 {
+        self.bytes[4]
+    }
+
+    pub fn has_trainer(&self) -> bool {
+        self.bytes[6] & 0b100 != 0
+    }
+
+    pub fn prg_rom(&self) -> &[u8] {
+        let npages: usize = self.prg_rom_npages().into();
+        let start = 16 + if self.has_trainer() { 0 } else { 512 };
+        let len = npages * PRG_ROM_PAGE_LEN;
+        &self.bytes[start..=(start + len)]
+    }
 }
 
 #[derive(Debug)]
-pub struct ParseError;
-
-pub fn parse_ines(bytes: &[u8]) -> Result<Rom, ParseError> {
-    let mut rom = Rom {
-        prg_rom: [0x00; 0x7FFF],
-    };
-
-    let nes_tag = bytes.get(..4).ok_or(ParseError)?;
-    if nes_tag != &[b'N', b'E', b'S', 0x1A] {
-        return Err(ParseError);
-    }
-    let len_prg_rom = bytes.get(4).ok_or(ParseError)?;
-    let len_chr_rom = bytes.get(5).ok_or(ParseError)?;
-    let flags6 = bytes.get(6).ok_or(ParseError)?;
-    let flags7 = bytes.get(7).ok_or(ParseError)?;
-    let len_prg_ram = bytes.get(8).ok_or(ParseError)?;
-    let flags9 = bytes.get(9).ok_or(ParseError)?;
-    let flags10 = bytes.get(10).ok_or(ParseError)?;
-    let reserved = bytes.get(11..16).ok_or(ParseError)?;
-
-    let prg_rom_pages = usize::from(*len_prg_rom);
-    let prg_page_len = 16384;
-    let prg_rom_len = prg_rom_pages * prg_page_len;
-
-    let skip_trainer = bytes[6] & 0b100 != 0;
-
-    let prg_rom_start = 16 + if skip_trainer { 512 } else { 0 };
-    rom.prg_rom
-        .copy_from_slice(&bytes[prg_rom_start..][..(prg_rom_len - 1)]);
-    Ok(rom)
+pub enum ParseError {
+    Header,
 }

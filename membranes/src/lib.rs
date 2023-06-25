@@ -36,7 +36,7 @@ impl Nes {
     /// Returns Err if the program is too long to fit into prg_rom.
     pub fn load(&mut self, program: &[u8]) -> Result<(), ()> {
         let rom = self.bus.prg_rom.get_mut(..program.len()).ok_or(())?;
-        rom.copy_from_slice(&program[..]);
+        rom.copy_from_slice(program);
         Ok(())
     }
 
