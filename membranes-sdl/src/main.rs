@@ -26,9 +26,8 @@ fn main() {
     let mut rng = rand::thread_rng();
 
     let rom = std::fs::read("freeware/snake.nes").unwrap();
-    let rom = membranes_rom::INesV1::parse(&rom).unwrap();
     let mut nes = membranes::Nes::default();
-    nes.load(rom.prg_rom()).unwrap();
+    nes.load(&rom).unwrap();
     nes.cpu.regs.pc = 0x8600;
     nes.cpu.regs.sp = 0xFF;
 

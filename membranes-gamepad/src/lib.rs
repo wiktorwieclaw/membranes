@@ -1,7 +1,9 @@
 use bitflags::bitflags;
+use wasm_bindgen::prelude::*;
 
 bitflags! {
     #[derive(Default)]
+    #[wasm_bindgen]
     pub struct ButtonFlags: u8 {
         const RIGHT = 0b10000000;
         const LEFT = 0b01000000;
@@ -14,7 +16,8 @@ bitflags! {
     }
 }
 
-#[derive(Default)]
+#[derive(Default, Clone, Copy)]
+#[wasm_bindgen]
 pub struct Gamepad {
     _is_strobe: bool,
     button_status_flags: ButtonFlags,

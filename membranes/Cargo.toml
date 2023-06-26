@@ -12,6 +12,4 @@ crate-type = ["cdylib", "rlib"]
 membranes-cpu = { path = "../membranes-cpu" }
 membranes-gamepad = { path = "../membranes-gamepad" }
 membranes-rom = { path = "../membranes-rom" }
-
-[target.'cfg(target_arch = "wasm32")'.dependencies]
 wasm-bindgen = "0.2.87"

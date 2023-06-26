@@ -150,11 +150,15 @@ name = "membranes-gamepad"
 version = "0.1.0"
 dependencies = [
  "bitflags",
+ "wasm-bindgen",
 ]
 
 [[package]]
 name = "membranes-rom"
 version = "0.1.0"
+dependencies = [
+ "wasm-bindgen",
+]
 
 [[package]]
 name = "membranes-sdl"

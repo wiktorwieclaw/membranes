@@ -1,3 +1,5 @@
+use wasm_bindgen::prelude::*;
+
 pub const PRG_ROM_PAGE_LEN: usize = 16384;
 
 pub struct INesV1<'a> {
@@ -29,13 +31,14 @@ impl INesV1<'_> {
 
     pub fn prg_rom(&self) -> &[u8] {
         let npages: usize = self.prg_rom_npages().into();
-        let start = 16 + if self.has_trainer() { 0 } else { 512 };
+        let start = 16 + if self.has_trainer() { 512 } else { 0 };
         let len = npages * PRG_ROM_PAGE_LEN;
-        &self.bytes[start..=(start + len)]
+        &self.bytes[start..(start + len - 1)]
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
+#[wasm_bindgen]
 pub enum ParseError {
     Header,
 }

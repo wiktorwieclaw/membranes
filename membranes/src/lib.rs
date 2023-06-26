@@ -1,15 +1,15 @@
 use membranes_cpu::Cpu;
 use membranes_gamepad::Gamepad;
-#[cfg(target_arch = "wasm")]
-use wasm_bindgen::wasm_bindgen;
+use wasm_bindgen::prelude::*;
 
 pub use membranes_cpu as cpu;
 pub use membranes_gamepad as gamepad;
 pub use membranes_rom as rom;
 
-#[cfg_attr(target_arch = "wasm", wasm_bindgen)]
+#[wasm_bindgen]
 pub struct Nes {
     pub cpu: Cpu,
+    #[wasm_bindgen(getter_with_clone)]
     pub bus: Bus,
 }
 
@@ -18,8 +18,8 @@ impl Default for Nes {
         Self {
             cpu: Default::default(),
             bus: Bus {
-                ram: [0x00; 0x2000],
-                prg_rom: [0x00; 0x7FFF],
+                ram: vec![0x00; 0x2000],
+                prg_rom: vec![0x00; 0x7FFF],
                 gamepad_1: Default::default(),
                 gamepad_2: Default::default(),
             },
@@ -27,28 +27,44 @@ impl Default for Nes {
     }
 }
 
+#[wasm_bindgen]
 impl Nes {
-    #[cfg_attr(target_arch = "wasm", wasm_bindgen(constructor))]
+    #[wasm_bindgen(constructor)]
     pub fn new() -> Self {
         Default::default()
     }
 
+    pub fn reset(&mut self) {
+        self.cpu.regs.pc = 0x8600;
+        self.cpu.regs.sp = 0xFF;
+    }
+
     /// Returns Err if the program is too long to fit into prg_rom.
-    pub fn load(&mut self, program: &[u8]) -> Result<(), ()> {
-        let rom = self.bus.prg_rom.get_mut(..program.len()).ok_or(())?;
-        rom.copy_from_slice(program);
+    pub fn load(&mut self, rom: &[u8]) -> Result<(), String> {
+        let ines = rom::INesV1::parse(rom).map_err(|e| format!("{:?}", e))?;
+        let prg = ines.prg_rom();
+        let rom = self.bus.prg_rom.get_mut(..prg.len()).unwrap();
+        rom.copy_from_slice(prg);
+        self.reset();
         Ok(())
     }
 
     pub fn next(&mut self) {
         self.cpu.next(&mut self.bus);
     }
+
+    pub fn ram(&mut self) -> *const u8 {
+        self.bus.ram.as_ptr()
+    }
 }
 
-#[cfg_attr(target_arch = "wasm", wasm_bindgen)]
+#[wasm_bindgen]
+#[derive(Clone)]
 pub struct Bus {
-    pub ram: [u8; 0x2000],
-    pub prg_rom: [u8; 0x7FFF],
+    #[wasm_bindgen(getter_with_clone)]
+    pub ram: Vec<u8>,
+    #[wasm_bindgen(getter_with_clone)]
+    pub prg_rom: Vec<u8>,
     pub gamepad_1: Gamepad,
     pub gamepad_2: Gamepad,
 }
