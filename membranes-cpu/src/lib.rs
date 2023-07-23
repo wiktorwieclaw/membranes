@@ -91,7 +91,7 @@ where
     }
 }
 
-#[derive(Default, Debug, PartialEq, Eq, Clone, Copy)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 #[wasm_bindgen]
 pub struct Cpu {
     pub regs: Regs,
@@ -103,7 +103,13 @@ pub enum SideEffect {
 
 impl Cpu {
     pub fn new() -> Self {
-        Self::default()
+        Self {
+            regs: Regs {
+                sp: 0xFD,
+                flags: Flags::INTERRUPT_DISABLE | Flags::B_2,
+                ..Default::default()
+            },
+        }
     }
 
     pub fn from_regs(regs: Regs) -> Self {

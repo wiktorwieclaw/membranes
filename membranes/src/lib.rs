@@ -16,7 +16,7 @@ pub struct Nes {
 impl Default for Nes {
     fn default() -> Self {
         Self {
-            cpu: Default::default(),
+            cpu: Cpu::new(),
             bus: Bus {
                 ram: vec![0x00; 0x2000],
                 prg_rom: vec![0x00; 0x7FFF],
@@ -34,18 +34,12 @@ impl Nes {
         Default::default()
     }
 
-    pub fn reset(&mut self) {
-        self.cpu.regs.pc = 0x8600;
-        self.cpu.regs.sp = 0xFF;
-    }
-
     /// Returns Err if the program is too long to fit into prg_rom.
     pub fn load(&mut self, rom: &[u8]) -> Result<(), String> {
         let ines = rom::INesV1::parse(rom).map_err(|e| format!("{:?}", e))?;
         let prg = ines.prg_rom();
         let rom = self.bus.prg_rom.get_mut(..prg.len()).unwrap();
         rom.copy_from_slice(prg);
-        self.reset();
         Ok(())
     }
 
@@ -84,7 +78,7 @@ impl membranes_cpu::Bus for Bus {
             0x4016 => self.gamepad_1.read_u8(),
             0x4017 => self.gamepad_2.read_u8(),
             0x8000..=0xFFFF => {
-                let address = usize::from(address - 0x8000);
+                let address = (usize::from(address) - 0x8000) % 0x4000;
                 self.prg_rom[address]
             }
             _ => todo!(),
