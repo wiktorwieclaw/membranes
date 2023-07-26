@@ -1,12 +1,15 @@
 use std::error::Error;
 
-use membranes::cpu::{op, Bus, Effects, Regs};
+use membranes::{
+    cpu::{op, Bus as _, Effects, Regs},
+    Bus, Nes,
+};
 
 const NESTEST_ROM: &[u8] = include_bytes!("nestest.nes");
 const NESTEST_LOG: &str = include_str!("nestest.log");
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let mut nes = membranes::Nes::new();
+    let mut nes = Nes::new();
     nes.load(NESTEST_ROM)?;
     nes.cpu.regs.pc = 0xC000;
 
@@ -24,8 +27,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-fn format_log(regs: Regs, bus: &mut membranes::Bus, effects: Effects) -> String {
-    let membranes::cpu::Regs {
+fn format_log(regs: Regs, bus: &mut Bus, effects: Effects) -> String {
+    let Regs {
         a,
         x,
         y,
@@ -35,40 +38,64 @@ fn format_log(regs: Regs, bus: &mut membranes::Bus, effects: Effects) -> String 
     } = regs;
     let flags = flags.bits();
 
-    let Effects {
-        op,
-        opcode,
-        address,
-        ..
-    } = effects;
-
-    let mut hex = std::iter::once(&opcode)
-        .chain(&address.raw)
-        .map(|b| format!("{b:02X}"))
-        .collect::<Vec<String>>()
-        .join(" ");
+    let Effects { op, .. } = effects;
 
     let mnemonic = op.mnemonic().to_string();
     let mode = op.mode();
-    let argument = match mode {
-        op::Mode::Implied | op::Mode::Accumulator => String::new(),
-        op::Mode::Relative => format!("${:02X}", address.raw[0]),
-        op::Mode::Immediate => {
-            let operand = bus.read_u8(address.effective.unwrap());
-            hex += &format!(" {operand:02X}");
-            format!("#${:02X}", operand)
-        }
-        op::Mode::ZeroPage => format!("${:02X}", address.raw[0]),
-        op::Mode::ZeroPageX => format!("${:02X},X", address.raw[0]),
-        op::Mode::ZeroPageY => format!("${:02X},Y", address.raw[0]),
-        op::Mode::Absolute => format!("${:02X}{:02X}", address.raw[1], address.raw[0]),
-        op::Mode::AbsoluteX => format!("${:02X}{:02X},X", address.raw[1], address.raw[0]),
-        op::Mode::AbsoluteY => format!("${:02X}{:02X},Y", address.raw[1], address.raw[0]),
-        op::Mode::Indirect => format!("(${:02X}{:02X})", address.raw[1], address.raw[0]),
-        op::Mode::IndirectX => format!("(${:02X},X)", address.raw[0]),
-        op::Mode::IndirectY => format!("(${:02X}),Y", address.raw[0]),
+
+    let hex = [
+        bus.read_u8(pc),
+        bus.read_u8(pc.wrapping_add(1)),
+        bus.read_u8(pc.wrapping_add(2)),
+    ];
+
+    let (hex, argument) = match mode {
+        op::Mode::Implied | op::Mode::Accumulator => (format!("{:02X}", hex[0]), String::new()),
+        op::Mode::Relative => (
+            format!("{:02X} {:02X}", hex[0], hex[1]),
+            format!("${:02X}", hex[1]),
+        ),
+        op::Mode::Immediate => (
+            format!("{:02X} {:02X}", hex[0], hex[1]),
+            format!("#${:02X}", hex[1]),
+        ),
+        op::Mode::ZeroPage => (
+            format!("{:02X} {:02X}", hex[0], hex[1]),
+            format!("${:02X}", hex[1]),
+        ),
+        op::Mode::ZeroPageX => (
+            format!("{:02X} {:02X}", hex[0], hex[1]),
+            format!("${:02X},X", hex[1]),
+        ),
+        op::Mode::ZeroPageY => (
+            format!("{:02X} {:02X}", hex[0], hex[1]),
+            format!("${:02X},Y", hex[1]),
+        ),
+        op::Mode::Absolute => (
+            format!("{:02X} {:02X} {:02X}", hex[0], hex[1], hex[2]),
+            format!("${:02X}{:02X}", hex[2], hex[1]),
+        ),
+        op::Mode::AbsoluteX => (
+            format!("{:02X} {:02X} {:02X}", hex[0], hex[1], hex[2]),
+            format!("${:02X}{:02X},X", hex[2], hex[1]),
+        ),
+        op::Mode::AbsoluteY => (
+            format!("{:02X} {:02X} {:02X}", hex[0], hex[1], hex[2]),
+            format!("${:02X}{:02X},Y", hex[2], hex[1]),
+        ),
+        op::Mode::Indirect => (
+            format!("{:02X} {:02X} {:02X}", hex[0], hex[1], hex[2]),
+            format!("(${:02X}{:02X})", hex[2], hex[1]),
+        ),
+        op::Mode::IndirectX => (
+            format!("{:02X} {:02X}", hex[0], hex[1]),
+            format!("(${:02X},X)", hex[1]),
+        ),
+        op::Mode::IndirectY => (
+            format!("{:02X} {:02X}", hex[0], hex[1]),
+            format!("(${:02X}),Y", hex[1]),
+        ),
     };
     let asm = format!("{mnemonic} {argument}");
-
     format!("{pc:04X}  {hex:9} {asm:31} A:{a:02X} X:{x:02X} Y:{y:02X} P:{flags:02X} SP:{sp:02X}")
 }

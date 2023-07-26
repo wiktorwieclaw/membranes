@@ -144,6 +144,22 @@ pub enum Mode {
     IndirectY,
 }
 
+impl Mode {
+    pub fn arglen(self) -> u8 {
+        match self {
+            Mode::Implied | Mode::Accumulator => 0,
+            Mode::Immediate
+            | Mode::Relative
+            | Mode::IndirectX
+            | Mode::IndirectY
+            | Mode::ZeroPage
+            | Mode::ZeroPageX
+            | Mode::ZeroPageY => 1,
+            Mode::Absolute | Mode::AbsoluteX | Mode::AbsoluteY | Mode::Indirect => 2,
+        }
+    }
+}
+
 impl Op {
     pub fn parse(opcode: u8) -> Option<(Self, u8)> {
         let (mnemonic, mode, cycles) = match opcode {

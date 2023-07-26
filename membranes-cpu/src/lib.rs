@@ -100,9 +100,6 @@ pub struct Cpu {
 #[wasm_bindgen]
 pub struct Effects {
     pub op: Op,
-    pub opcode: u8,
-    #[wasm_bindgen(getter_with_clone)]
-    pub address: OperandAddress,
     pub cycles: u8,
 }
 
@@ -137,7 +134,7 @@ impl Cpu {
         let (mnemonic, mode) = (op.mnemonic(), op.mode());
 
         let address = operand_address(mode, regs, bus);
-        match (mnemonic, address.effective) {
+        match (mnemonic, address) {
             (op::Mnemonic::Adc, Some(address)) => adc(address, regs, bus),
             (op::Mnemonic::Adc, None) => unreachable!(),
             (op::Mnemonic::And, Some(address)) => and(address, regs, bus),
@@ -159,12 +156,7 @@ impl Cpu {
             (op::Mnemonic::Brk, Some(_)) => unreachable!(),
             (op::Mnemonic::Brk, None) => {
                 regs.flags.set(Flags::B_1, true);
-                return Effects {
-                    op,
-                    opcode,
-                    address,
-                    cycles,
-                };
+                return Effects { op, cycles };
             }
             (op::Mnemonic::Clc, Some(_)) => unreachable!(),
             (op::Mnemonic::Clc, None) => clc(regs),
@@ -219,108 +211,65 @@ impl Cpu {
             _ => todo!("{op:?}"),
         };
 
-        Effects {
-            op,
-            opcode,
-            address,
-            cycles,
-        }
+        Effects { op, cycles }
     }
 }
 
-#[derive(Clone)]
-#[wasm_bindgen]
-pub struct OperandAddress {
-    #[wasm_bindgen(getter_with_clone)]
-    pub raw: Vec<u8>,
-    pub effective: Option<u16>,
-}
-
-fn operand_address(mode: op::Mode, regs: &mut Regs, bus: &mut impl Bus) -> OperandAddress {
+fn operand_address(mode: op::Mode, regs: &mut Regs, bus: &mut impl Bus) -> Option<u16> {
     match mode {
-        op::Mode::Implied | op::Mode::Accumulator => OperandAddress {
-            raw: vec![],
-            effective: None,
-        },
+        op::Mode::Implied | op::Mode::Accumulator => None,
 
         op::Mode::Immediate | op::Mode::Relative => {
             let address = regs.pc;
             regs.pc = regs.pc.wrapping_add(1);
-            OperandAddress {
-                raw: vec![],
-                effective: Some(address),
-            }
+            Some(address)
         }
 
         op::Mode::ZeroPage => {
-            let raw = bus.read_u8(regs.pc);
+            let address = bus.read_u8(regs.pc);
             regs.pc = regs.pc.wrapping_add(1);
-            let address = raw;
-            regs.pc = regs.pc.wrapping_add(1);
-            OperandAddress {
-                raw: vec![raw],
-                effective: Some(address.into()),
-            }
+            Some(address.into())
         }
 
         op::Mode::ZeroPageX => {
             let raw = bus.read_u8(regs.pc);
             regs.pc = regs.pc.wrapping_add(1);
             let address = raw.wrapping_add(regs.x);
-            OperandAddress {
-                raw: vec![raw],
-                effective: Some(address.into()),
-            }
+            Some(address.into())
         }
 
         op::Mode::ZeroPageY => {
             let raw = bus.read_u8(regs.pc);
             regs.pc = regs.pc.wrapping_add(1);
             let address = raw.wrapping_add(regs.y);
-            OperandAddress {
-                raw: vec![raw],
-                effective: Some(address.into()),
-            }
+            Some(address.into())
         }
 
         op::Mode::Absolute => {
-            let raw = bus.read_u16_le(regs.pc);
+            let address = bus.read_u16_le(regs.pc);
             regs.pc = regs.pc.wrapping_add(2);
-            let address = raw;
-            OperandAddress {
-                raw: raw.to_le_bytes().into(),
-                effective: Some(address.into()),
-            }
+            Some(address)
         }
 
         op::Mode::AbsoluteX => {
             let raw = bus.read_u16_le(regs.pc);
             regs.pc = regs.pc.wrapping_add(2);
             let address = raw.wrapping_add(regs.x.into());
-            OperandAddress {
-                raw: raw.to_le_bytes().into(),
-                effective: Some(address.into()),
-            }
+            Some(address)
         }
 
         op::Mode::AbsoluteY => {
             let raw = bus.read_u16_le(regs.pc);
             regs.pc = regs.pc.wrapping_add(2);
             let address = raw.wrapping_add(regs.y.into());
-            OperandAddress {
-                raw: raw.to_le_bytes().into(),
-                effective: Some(address.into()),
-            }
+            Some(address)
         }
 
         op::Mode::Indirect => {
             let raw = bus.read_u16_le(regs.pc);
             regs.pc = regs.pc.wrapping_add(1);
             let address = bus.read_u16_le(raw);
-            OperandAddress {
-                raw: raw.to_le_bytes().into(),
-                effective: Some(address.into()),
-            }
+            Some(address)
         }
 
         op::Mode::IndirectX => {
@@ -328,20 +277,14 @@ fn operand_address(mode: op::Mode, regs: &mut Regs, bus: &mut impl Bus) -> Opera
             regs.pc = regs.pc.wrapping_add(1);
             let address = raw.wrapping_add(regs.x).into();
             let address = bus.read_u16_le(address);
-            OperandAddress {
-                raw: vec![raw],
-                effective: Some(address.into()),
-            }
+            Some(address)
         }
 
         op::Mode::IndirectY => {
             let raw = bus.read_u8(regs.pc);
             regs.pc = regs.pc.wrapping_add(1);
             let address = bus.read_u16_le(raw.into()).wrapping_add(regs.y.into());
-            OperandAddress {
-                raw: vec![raw],
-                effective: Some(address.into()),
-            }
+            Some(address)
         }
     }
 }
