@@ -206,6 +206,8 @@ impl Cpu {
             (op::Mnemonic::Sec, None) => sec(regs),
             (op::Mnemonic::Sta, Some(address)) => sta(address, regs, bus),
             (op::Mnemonic::Sta, None) => unreachable!(),
+            (op::Mnemonic::Stx, Some(address)) => stx(address, regs, bus),
+            (op::Mnemonic::Stx, None) => unreachable!(),
             (op::Mnemonic::Txa, Some(_)) => unreachable!(),
             (op::Mnemonic::Txa, None) => txa(regs),
             _ => todo!("{op:?}"),
@@ -529,6 +531,10 @@ fn sec(regs: &mut Regs) {
 
 fn sta(address: u16, regs: &Regs, bus: &mut impl Bus) {
     bus.write_u8(address, regs.a)
+}
+
+fn stx(address: u16, regs: &Regs, bus: &mut impl Bus) {
+    bus.write_u8(address, regs.x)
 }
 
 fn txa(regs: &mut Regs) {
