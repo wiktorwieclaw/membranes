@@ -19,9 +19,9 @@ fn main() -> Result<(), Box<dyn Error>> {
 
         let log = format_log(regs, &mut nes.bus, effects);
 
-        // FIXME:, remove split when PPU is implemented
+        // FIXME: remove split when PPU is implemented
         let expected = expected.split_at(73).0;
-        assert_eq!(log, expected, "line {i}");
+        assert_eq!(log, expected, "line {}", i + 1);
     }
 
     Ok(())
@@ -38,7 +38,11 @@ fn format_log(regs: Regs, bus: &mut Bus, effects: Effects) -> String {
     } = regs;
     let flags = flags.bits();
 
-    let Effects { op, .. } = effects;
+    let Effects {
+        op,
+        operand_address,
+        ..
+    } = effects;
 
     let mnemonic = op.mnemonic().to_string();
     let mode = op.mode();
@@ -51,17 +55,25 @@ fn format_log(regs: Regs, bus: &mut Bus, effects: Effects) -> String {
 
     let (hex, argument) = match mode {
         op::Mode::Implied | op::Mode::Accumulator => (format!("{:02X}", hex[0]), String::new()),
-        op::Mode::Relative => (
-            format!("{:02X} {:02X}", hex[0], hex[1]),
-            format!("${:02X}", hex[1]),
-        ),
+        op::Mode::Relative => {
+            let offset = bus.read_u8(operand_address.unwrap()) as i8;
+            let address = pc.wrapping_add(2).wrapping_add_signed(offset.into());
+            (
+                format!("{:02X} {:02X}", hex[0], hex[1]),
+                format!("${:02X}", address),
+            )
+        }
         op::Mode::Immediate => (
             format!("{:02X} {:02X}", hex[0], hex[1]),
             format!("#${:02X}", hex[1]),
         ),
         op::Mode::ZeroPage => (
             format!("{:02X} {:02X}", hex[0], hex[1]),
-            format!("${:02X}", hex[1]),
+            format!(
+                "${:02X} = {:02X}",
+                hex[1],
+                bus.read_u8(operand_address.unwrap())
+            ),
         ),
         op::Mode::ZeroPageX => (
             format!("{:02X} {:02X}", hex[0], hex[1]),

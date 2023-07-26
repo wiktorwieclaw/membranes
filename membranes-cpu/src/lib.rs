@@ -100,6 +100,7 @@ pub struct Cpu {
 #[wasm_bindgen]
 pub struct Effects {
     pub op: Op,
+    pub operand_address: Option<u16>,
     pub cycles: u8,
 }
 
@@ -133,8 +134,8 @@ impl Cpu {
 
         let (mnemonic, mode) = (op.mnemonic(), op.mode());
 
-        let address = operand_address(mode, regs, bus);
-        match (mnemonic, address) {
+        let operand_address = operand_address(mode, regs, bus);
+        match (mnemonic, operand_address) {
             (op::Mnemonic::Adc, Some(address)) => adc(address, regs, bus),
             (op::Mnemonic::Adc, None) => unreachable!(),
             (op::Mnemonic::And, Some(address)) => and(address, regs, bus),
@@ -156,7 +157,11 @@ impl Cpu {
             (op::Mnemonic::Brk, Some(_)) => unreachable!(),
             (op::Mnemonic::Brk, None) => {
                 regs.flags.set(Flags::B_1, true);
-                return Effects { op, cycles };
+                return Effects {
+                    op,
+                    operand_address,
+                    cycles,
+                };
             }
             (op::Mnemonic::Clc, Some(_)) => unreachable!(),
             (op::Mnemonic::Clc, None) => clc(regs),
@@ -213,7 +218,11 @@ impl Cpu {
             _ => todo!("{op:?}"),
         };
 
-        Effects { op, cycles }
+        Effects {
+            op,
+            operand_address,
+            cycles,
+        }
     }
 }
 
