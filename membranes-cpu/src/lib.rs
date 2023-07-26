@@ -247,7 +247,7 @@ fn operand_address(mode: op::Mode, regs: &mut Regs, bus: &mut impl Bus) -> Opera
             let address = regs.pc;
             regs.pc = regs.pc.wrapping_add(1);
             OperandAddress {
-                raw: vec![bus.read_u8(address)],
+                raw: vec![],
                 effective: Some(address),
             }
         }
