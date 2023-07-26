@@ -1,6 +1,6 @@
 //! parts of the code taken from https://bugzmanov.github.io/nes_ebook/chapter_3_4.html
 
-use membranes_cpu::{Bus, SideEffect};
+use membranes_cpu::Bus;
 use rand::Rng;
 use sdl2::{event::Event, keyboard::Keycode};
 
@@ -41,8 +41,8 @@ fn main() {
             canvas.present();
         }
 
-        let (_op, effect) = nes.cpu.next(&mut nes.bus);
-        if let Some(SideEffect::Break) = effect {
+        let effects = nes.cpu.next(&mut nes.bus);
+        if let membranes::cpu::op::Mnemonic::Brk = effects.op.mnemonic() {
             break;
         }
     }

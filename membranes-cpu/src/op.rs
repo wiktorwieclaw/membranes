@@ -1,11 +1,15 @@
+use wasm_bindgen::prelude::*;
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[wasm_bindgen]
 pub struct Op {
     mnemonic: Mnemonic,
     mode: Mode,
-    cycles: u8,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, strum::Display)]
+#[strum(serialize_all = "UPPERCASE")]
+#[wasm_bindgen]
 pub enum Mnemonic {
     /// Add with Carry
     Adc,
@@ -123,6 +127,7 @@ pub enum Mnemonic {
 
 /// Addressing Mode
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[wasm_bindgen]
 pub enum Mode {
     Implied,
     Relative,
@@ -140,7 +145,7 @@ pub enum Mode {
 }
 
 impl Op {
-    pub fn parse(opcode: u8) -> Option<Self> {
+    pub fn parse(opcode: u8) -> Option<(Self, u8)> {
         let (mnemonic, mode, cycles) = match opcode {
             0x69 => (Mnemonic::Adc, Mode::Immediate, 2),
             0x65 => (Mnemonic::Adc, Mode::ZeroPage, 3),
@@ -295,11 +300,7 @@ impl Op {
             0x98 => (Mnemonic::Tya, Mode::Implied, 2),
             _ => return None,
         };
-        Some(Self {
-            mnemonic,
-            mode,
-            cycles,
-        })
+        Some((Self { mnemonic, mode }, cycles))
     }
 
     pub fn mnemonic(&self) -> Mnemonic {
