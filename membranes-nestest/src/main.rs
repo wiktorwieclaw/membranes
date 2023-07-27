@@ -15,7 +15,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     for (i, expected) in NESTEST_LOG.lines().enumerate() {
         let regs = nes.cpu.regs;
-        let effects = nes.next();
+        let effects = nes.next_op();
 
         let log = format_log(regs, &mut nes.bus, effects);
 

@@ -43,7 +43,7 @@ impl Nes {
         Ok(())
     }
 
-    pub fn next(&mut self) -> cpu::Effects {
+    pub fn next_op(&mut self) -> cpu::Effects {
         self.cpu.next(&mut self.bus)
     }
 
