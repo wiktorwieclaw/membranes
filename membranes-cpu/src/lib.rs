@@ -610,7 +610,7 @@ fn tay(regs: &mut Regs) {
 }
 
 fn tsx(regs: &mut Regs) {
-    regs.y = regs.sp;
+    regs.x = regs.sp;
     regs.flags.set(Flags::ZERO, is_zero(regs.x));
     regs.flags.set(Flags::NEGATIVE, is_negative(regs.x));
 }

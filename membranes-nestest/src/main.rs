@@ -45,7 +45,7 @@ fn format_log(regs: Regs, bus: &mut Bus, effects: Effects) -> String {
         ..
     } = effects;
 
-    let mnemonic = op.mnemonic().to_string();
+    let mnemonic = op.mnemonic();
     let mode = op.mode();
 
     let hex = [
@@ -82,7 +82,11 @@ fn format_log(regs: Regs, bus: &mut Bus, effects: Effects) -> String {
         ),
         op::Mode::Absolute => (
             format!("{:02X} {:02X} {:02X}", hex[0], hex[1], hex[2]),
-            format!("${:02X}{:02X}", hex[2], hex[1]),
+            if matches!(mnemonic, op::Mnemonic::Sty | op::Mnemonic::Stx) {
+                format!("${:02X}{:02X} = {:02X}", hex[2], hex[1], operand.unwrap())
+            } else {
+                format!("${:02X}{:02X}", hex[2], hex[1])
+            }
         ),
         op::Mode::AbsoluteX => (
             format!("{:02X} {:02X} {:02X}", hex[0], hex[1], hex[2]),
