@@ -228,7 +228,7 @@ impl Op {
             0x41 => (Mnemonic::Eor, Mode::IndirectX, 6),
             0x51 => (Mnemonic::Eor, Mode::IndirectY, 5),
             0xE6 => (Mnemonic::Inc, Mode::ZeroPage, 5),
-            0xF6 => (Mnemonic::Inc, Mode::ZeroPage, 6),
+            0xF6 => (Mnemonic::Inc, Mode::ZeroPageX, 6),
             0xEE => (Mnemonic::Inc, Mode::Absolute, 6),
             0xFE => (Mnemonic::Inc, Mode::AbsoluteX, 7),
             0xE8 => (Mnemonic::Inx, Mode::Implied, 2),

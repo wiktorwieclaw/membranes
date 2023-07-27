@@ -263,7 +263,13 @@ fn operand_address(mode: op::Mode, regs: &mut Regs, bus: &mut impl Bus) -> Optio
         op::Mode::Indirect => {
             let raw = bus.read_u16_le(regs.pc);
             regs.pc = regs.pc.wrapping_add(1);
-            let address = bus.read_u16_le(raw);
+            let address = if raw & 0x00FF == 0x00FF {
+                let lo = bus.read_u8(raw);
+                let hi = bus.read_u8(raw & 0xFF00);
+                u16::from_le_bytes([lo, hi])
+            } else {
+                bus.read_u16_le(raw)
+            };
             Some(address)
         }
 
