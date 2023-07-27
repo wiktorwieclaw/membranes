@@ -149,6 +149,8 @@ impl Cpu {
             (op::Mnemonic::Bne, Some(address)) => bne(address, regs, bus),
             (op::Mnemonic::Bpl, Some(address)) => bpl(address, regs, bus),
             (op::Mnemonic::Brk, None) => brk(regs),
+            (op::Mnemonic::Bvc, Some(address)) => bvc(address, regs, bus),
+            (op::Mnemonic::Bvs, Some(address)) => bvs(address, regs, bus),
             (op::Mnemonic::Clc, None) => clc(regs),
             (op::Mnemonic::Cld, None) => cld(regs),
             (op::Mnemonic::Cli, None) => cli(regs),
@@ -165,6 +167,11 @@ impl Cpu {
             (op::Mnemonic::Jmp, Some(address)) => jmp(address, regs),
             (op::Mnemonic::Jsr, Some(address)) => jsr(address, regs, bus),
             (op::Mnemonic::Nop, None) => nop(),
+            (op::Mnemonic::Ora, Some(address)) => ora(address, regs, bus),
+            (op::Mnemonic::Pha, None) => pha(regs, bus),
+            (op::Mnemonic::Php, None) => php(regs, bus),
+            (op::Mnemonic::Pla, None) => pla(regs, bus),
+            (op::Mnemonic::Plp, None) => plp(regs, bus),
             (op::Mnemonic::Lda, Some(address)) => lda(address, regs, bus),
             (op::Mnemonic::Ldx, Some(address)) => ldx(address, regs, bus),
             (op::Mnemonic::Ldy, Some(address)) => ldy(address, regs, bus),
@@ -173,6 +180,8 @@ impl Cpu {
             (op::Mnemonic::Rts, None) => rts(regs, bus),
             (op::Mnemonic::Sbc, Some(address)) => sbc(address, regs, bus),
             (op::Mnemonic::Sec, None) => sec(regs),
+            (op::Mnemonic::Sed, None) => sed(regs),
+            (op::Mnemonic::Sei, None) => sei(regs),
             (op::Mnemonic::Sta, Some(address)) => sta(address, regs, bus),
             (op::Mnemonic::Stx, Some(address)) => stx(address, regs, bus),
             (op::Mnemonic::Txa, None) => txa(regs),
@@ -350,6 +359,20 @@ fn brk(regs: &mut Regs) {
     regs.flags.set(Flags::B_1, true);
 }
 
+fn bvc(address: u16, regs: &mut Regs, bus: &mut impl Bus) {
+    if !regs.flags.contains(Flags::OVERFLOW) {
+        let offset = bus.read_u8(address) as i8;
+        regs.pc = regs.pc.wrapping_add_signed(offset.into());
+    }
+}
+
+fn bvs(address: u16, regs: &mut Regs, bus: &mut impl Bus) {
+    if regs.flags.contains(Flags::OVERFLOW) {
+        let offset = bus.read_u8(address) as i8;
+        regs.pc = regs.pc.wrapping_add_signed(offset.into());
+    }
+}
+
 fn clc(regs: &mut Regs) {
     regs.flags.remove(Flags::CARRY);
 }
@@ -481,6 +504,32 @@ fn lsr(address: u16, regs: &mut Regs, bus: &mut impl Bus) {
 
 fn nop() {}
 
+fn ora(_address: u16, _regs: &mut Regs, _bus: &mut impl Bus) {
+    todo!()
+}
+
+fn pha(regs: &mut Regs, bus: &mut impl Bus) {
+    bus.write_u8(STACK_START.wrapping_add(regs.sp.into()), regs.a);
+    regs.sp = regs.sp.wrapping_sub(1);
+}
+
+fn php(regs: &mut Regs, bus: &mut impl Bus) {
+    bus.write_u8(STACK_START.wrapping_add(regs.sp.into()), regs.flags.bits());
+    regs.sp = regs.sp.wrapping_sub(1);
+}
+
+fn pla(regs: &mut Regs, bus: &mut impl Bus) {
+    regs.sp = regs.sp.wrapping_add(1);
+    regs.a = bus.read_u8(STACK_START.wrapping_add(regs.sp.into()));
+    regs.flags.set(Flags::ZERO, is_zero(regs.a));
+    regs.flags.set(Flags::NEGATIVE, is_negative(regs.a));
+}
+
+fn plp(regs: &mut Regs, bus: &mut impl Bus) {
+    regs.sp = regs.sp.wrapping_add(1);
+    regs.flags = Flags::from_bits_truncate(bus.read_u8(STACK_START.wrapping_add(regs.sp.into())));
+}
+
 fn rts(regs: &mut Regs, bus: &mut impl Bus) {
     regs.pc = bus
         .read_u16_be(STACK_START.wrapping_add(regs.sp.wrapping_add(1).into()))
@@ -502,6 +551,14 @@ fn sbc(address: u16, regs: &mut Regs, bus: &mut impl Bus) {
 
 fn sec(regs: &mut Regs) {
     regs.flags.insert(Flags::CARRY)
+}
+
+fn sed(regs: &mut Regs) {
+    regs.flags.insert(Flags::DECIMAL)
+}
+
+fn sei(regs: &mut Regs) {
+    regs.flags.insert(Flags::INTERRUPT_DISABLE)
 }
 
 fn sta(address: u16, regs: &Regs, bus: &mut impl Bus) {
