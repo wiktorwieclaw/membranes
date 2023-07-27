@@ -98,7 +98,12 @@ fn format_log(regs: Regs, bus: &mut Bus, effects: Effects) -> String {
         ),
         op::Mode::Indirect => (
             format!("{:02X} {:02X} {:02X}", hex[0], hex[1], hex[2]),
-            format!("(${:02X}{:02X})", hex[2], hex[1]),
+            format!(
+                "(${:02X}{:02X}) = {:04X}",
+                hex[2],
+                hex[1],
+                bus.read_u16_le(u16::from_be_bytes([hex[2], hex[1]]))
+            ),
         ),
         op::Mode::IndirectX => (
             format!("{:02X} {:02X}", hex[0], hex[1]),
@@ -110,10 +115,19 @@ fn format_log(regs: Regs, bus: &mut Bus, effects: Effects) -> String {
                 operand.unwrap()
             ),
         ),
-        op::Mode::IndirectY => (
-            format!("{:02X} {:02X}", hex[0], hex[1]),
-            format!("(${:02X}),Y", hex[1]),
-        ),
+        op::Mode::IndirectY => (format!("{:02X} {:02X}", hex[0], hex[1]), {
+            let operand_address = operand_address.unwrap();
+            format!(
+                "(${:02X}),Y = {:04X} @ {:04X} = {:02X}",
+                hex[1],
+                u16::from_le_bytes([
+                    bus.read_u8(hex[1].into()),
+                    bus.read_u8(hex[1].wrapping_add(1).into())
+                ]),
+                operand_address,
+                operand.unwrap()
+            )
+        }),
     };
     let asm = format!("{mnemonic} {argument}");
     format!("{pc:04X}  {hex:9} {asm:31} A:{a:02X} X:{x:02X} Y:{y:02X} P:{flags:02X} SP:{sp:02X}")
