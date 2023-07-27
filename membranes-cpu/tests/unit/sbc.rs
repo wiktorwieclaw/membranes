@@ -30,7 +30,7 @@ fn overflow_into_zero(regs: Regs) {
 }
 
 #[proptest]
-fn overflow_into_negative(regs: Regs) {
+fn negative(regs: Regs) {
     let regs = Regs {
         pc: 0x00,
         a: 0x00,
@@ -49,8 +49,8 @@ fn overflow_into_negative(regs: Regs) {
             pc: 0x02,
             flags: regs
                 .flags
-                .union(Flags::OVERFLOW | Flags::NEGATIVE)
-                .difference(Flags::CARRY | Flags::ZERO),
+                .union(Flags::NEGATIVE)
+                .difference(Flags::CARRY | Flags::ZERO | Flags::OVERFLOW),
             ..regs
         }
     );

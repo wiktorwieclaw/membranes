@@ -14,8 +14,8 @@ fn test(regs: Regs) {
     // prg rom
     bus[0x0000] = 0x60;
     // stack
-    bus[0x01FE] = 0xBE;
-    bus[0x01FF] = 0xEE;
+    bus[0x01FE] = 0xEE;
+    bus[0x01FF] = 0xBE;
 
     cpu.next(&mut bus);
 

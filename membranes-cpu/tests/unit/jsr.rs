@@ -26,6 +26,6 @@ fn test(regs: Regs) {
             ..regs
         }
     );
-    prop_assert_eq!(bus[0x01FE], 0x00);
-    prop_assert_eq!(bus[0x01FF], 0x02);
+    prop_assert_eq!(bus[0x01FE], 0x02);
+    prop_assert_eq!(bus[0x01FF], 0x00);
 }
