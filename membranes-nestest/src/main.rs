@@ -86,7 +86,7 @@ fn format_log(regs: Regs, bus: &mut Bus, effects: Effects) -> String {
                 format!("${:02X}{:02X}", hex[2], hex[1])
             } else {
                 format!("${:02X}{:02X} = {:02X}", hex[2], hex[1], operand.unwrap())
-            }
+            },
         ),
         op::Mode::AbsoluteX => (
             format!("{:02X} {:02X} {:02X}", hex[0], hex[1], hex[2]),

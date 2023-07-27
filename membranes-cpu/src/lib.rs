@@ -285,12 +285,14 @@ fn adc(address: u16, regs: &mut Regs, bus: &mut impl Bus) {
     let c = regs.flags.contains(Flags::CARRY) as u8;
     let (result, is_overflow1) = regs.a.overflowing_add(m);
     let (result, is_overflow2) = result.overflowing_add(c);
-    
+
     let is_overflow = is_overflow1 | is_overflow2;
     regs.flags.set(Flags::CARRY, is_overflow);
     regs.flags.set(Flags::ZERO, is_zero(result));
-    regs.flags
-        .set(Flags::OVERFLOW, (a ^ m) & 0x80 == 0 && (a ^ result) & 0x80 != 0);
+    regs.flags.set(
+        Flags::OVERFLOW,
+        (a ^ m) & 0x80 == 0 && (a ^ result) & 0x80 != 0,
+    );
     regs.flags.set(Flags::NEGATIVE, is_negative(result));
     regs.a = result;
 }
@@ -564,8 +566,7 @@ fn rti(regs: &mut Regs, bus: &mut impl Bus) {
     regs.flags.remove(Flags::BREAK_1);
     regs.flags.insert(Flags::BREAK_2);
 
-    regs.pc = bus
-        .read_u16_le(STACK_START.wrapping_add(regs.sp.wrapping_add(1).into()));
+    regs.pc = bus.read_u16_le(STACK_START.wrapping_add(regs.sp.wrapping_add(1).into()));
     regs.sp = regs.sp.wrapping_add(2);
 }
 
@@ -585,7 +586,10 @@ fn sbc(address: u16, regs: &mut Regs, bus: &mut impl Bus) {
     let is_overflow = is_overflow1 | is_overflow2;
     regs.flags.set(Flags::CARRY, !is_overflow);
     regs.flags.set(Flags::ZERO, result == 0);
-    regs.flags.set(Flags::OVERFLOW, (a ^ m) & 0x80 != 0 && (a ^ result) & 0x80 != 0);
+    regs.flags.set(
+        Flags::OVERFLOW,
+        (a ^ m) & 0x80 != 0 && (a ^ result) & 0x80 != 0,
+    );
     regs.flags.set(Flags::NEGATIVE, is_negative(result));
     regs.a = result;
 }
