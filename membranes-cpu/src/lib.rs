@@ -191,6 +191,7 @@ impl Cpu {
             (op::Mnemonic::Sei, None) => sei(regs),
             (op::Mnemonic::Sta, Some(address)) => sta(address, regs, bus),
             (op::Mnemonic::Stx, Some(address)) => stx(address, regs, bus),
+            (op::Mnemonic::Sty, Some(address)) => sty(address, regs, bus),
             (op::Mnemonic::Tax, None) => tax(regs),
             (op::Mnemonic::Tay, None) => tay(regs),
             (op::Mnemonic::Tsx, None) => tsx(regs),
@@ -656,6 +657,10 @@ fn sta(address: u16, regs: &Regs, bus: &mut impl Bus) {
 
 fn stx(address: u16, regs: &Regs, bus: &mut impl Bus) {
     bus.write_u8(address, regs.x)
+}
+
+fn sty(address: u16, regs: &Regs, bus: &mut impl Bus) {
+    bus.write_u8(address, regs.y)
 }
 
 fn tax(regs: &mut Regs) {
