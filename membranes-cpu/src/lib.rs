@@ -179,6 +179,7 @@ impl Cpu {
             (op::Mnemonic::Ldy, Some(address)) => ldy(address, regs, bus),
             (op::Mnemonic::Lsr, Some(address)) => lsr(address, regs, bus),
             (op::Mnemonic::Lsr, None) => lsr_a(regs),
+            (op::Mnemonic::Rti, None) => rti(regs, bus),
             (op::Mnemonic::Rts, None) => rts(regs, bus),
             (op::Mnemonic::Sbc, Some(address)) => sbc(address, regs, bus),
             (op::Mnemonic::Sec, None) => sec(regs),
@@ -555,6 +556,17 @@ fn plp(regs: &mut Regs, bus: &mut impl Bus) {
     regs.flags = Flags::from_bits_truncate(bus.read_u8(STACK_START.wrapping_add(regs.sp.into())));
     regs.flags.remove(Flags::BREAK_1);
     regs.flags.insert(Flags::BREAK_2);
+}
+
+fn rti(regs: &mut Regs, bus: &mut impl Bus) {
+    regs.sp = regs.sp.wrapping_add(1);
+    regs.flags = Flags::from_bits_truncate(bus.read_u8(STACK_START.wrapping_add(regs.sp.into())));
+    regs.flags.remove(Flags::BREAK_1);
+    regs.flags.insert(Flags::BREAK_2);
+
+    regs.pc = bus
+        .read_u16_le(STACK_START.wrapping_add(regs.sp.wrapping_add(1).into()));
+    regs.sp = regs.sp.wrapping_add(2);
 }
 
 fn rts(regs: &mut Regs, bus: &mut impl Bus) {

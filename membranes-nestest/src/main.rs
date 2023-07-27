@@ -54,7 +54,8 @@ fn format_log(regs: Regs, bus: &mut Bus, effects: Effects) -> String {
     ];
 
     let (hex, argument) = match mode {
-        op::Mode::Implied | op::Mode::Accumulator => (format!("{:02X}", hex[0]), String::new()),
+        op::Mode::Implied => (format!("{:02X}", hex[0]), String::new()),
+        op::Mode::Accumulator => (format!("{:02X}", hex[0]), String::from("A")),
         op::Mode::Relative => {
             let offset = bus.read_u8(operand_address.unwrap()) as i8;
             let address = pc.wrapping_add(2).wrapping_add_signed(offset.into());
