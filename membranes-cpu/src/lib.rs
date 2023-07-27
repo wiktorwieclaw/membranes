@@ -274,19 +274,19 @@ fn operand_address(mode: op::Mode, regs: &mut Regs, bus: &mut impl Bus) -> Optio
 }
 
 fn adc(address: u16, regs: &mut Regs, bus: &mut impl Bus) {
-    let operand = bus.read_u8(address);
-    let (sum, new_carry1) = regs.a.overflowing_add(operand);
-
-    let old_carry = regs.flags.contains(Flags::CARRY) as u8;
-    let (sum, new_carry2) = sum.overflowing_add(old_carry);
-
-    regs.flags.set(Flags::CARRY, new_carry1 | new_carry2);
-    regs.flags.set(Flags::ZERO, is_zero(sum));
+    let a = regs.a;
+    let m = bus.read_u8(address);
+    let c = regs.flags.contains(Flags::CARRY) as u8;
+    let (result, is_overflow1) = regs.a.overflowing_add(m);
+    let (result, is_overflow2) = result.overflowing_add(c);
+    
+    let is_overflow = is_overflow1 | is_overflow2;
+    regs.flags.set(Flags::CARRY, is_overflow);
+    regs.flags.set(Flags::ZERO, is_zero(result));
     regs.flags
-        .set(Flags::OVERFLOW, is_signed_overflow(operand, regs.a, sum));
-    regs.flags.set(Flags::NEGATIVE, is_negative(sum));
-
-    regs.a = sum;
+        .set(Flags::OVERFLOW, (a ^ m) & 0x80 == 0 && (a ^ result) & 0x80 != 0);
+    regs.flags.set(Flags::NEGATIVE, is_negative(result));
+    regs.a = result;
 }
 
 fn and(address: u16, regs: &mut Regs, bus: &mut impl Bus) {
@@ -560,13 +560,15 @@ fn rts(regs: &mut Regs, bus: &mut impl Bus) {
 }
 
 fn sbc(address: u16, regs: &mut Regs, bus: &mut impl Bus) {
+    let a = regs.a;
     let m = bus.read_u8(address);
-    let c = !regs.flags.contains(Flags::CARRY) as u8;
-    let result = regs.a.wrapping_sub(m).wrapping_sub(c);
-    let is_overflow = is_signed_overflow(m, regs.a, result);
+    let c = regs.flags.contains(Flags::CARRY) as u8;
+    let (result, is_overflow1) = a.overflowing_sub(m);
+    let (result, is_overflow2) = result.overflowing_sub(1 - c);
+    let is_overflow = is_overflow1 | is_overflow2;
     regs.flags.set(Flags::CARRY, !is_overflow);
-    regs.flags.set(Flags::ZERO, is_zero(result));
-    regs.flags.set(Flags::OVERFLOW, is_overflow);
+    regs.flags.set(Flags::ZERO, result == 0);
+    regs.flags.set(Flags::OVERFLOW, (a ^ m) & 0x80 != 0 && (a ^ result) & 0x80 != 0);
     regs.flags.set(Flags::NEGATIVE, is_negative(result));
     regs.a = result;
 }
@@ -603,8 +605,4 @@ fn is_zero(n: u8) -> bool {
 
 fn is_negative(n: u8) -> bool {
     n & 0b1000_0000 != 0
-}
-
-fn is_signed_overflow(n: u8, m: u8, result: u8) -> bool {
-    (n ^ result) & (m ^ result) & 0x80 != 0
 }
