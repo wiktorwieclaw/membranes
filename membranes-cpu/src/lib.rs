@@ -571,7 +571,7 @@ fn plp(regs: &mut Regs, bus: &mut impl Bus) {
 
 fn rol_a(regs: &mut Regs) {
     let new_carry = regs.a & (1 << 7) != 0;
-    regs.a = regs.a << 1 | regs.flags.contains(Flags::CARRY) as u8;
+    regs.a = (regs.a << 1) | regs.flags.contains(Flags::CARRY) as u8;
     regs.flags.set(Flags::CARRY, new_carry);
     regs.flags.set(Flags::ZERO, is_zero(regs.a));
     regs.flags.set(Flags::NEGATIVE, is_negative(regs.a));
@@ -580,16 +580,16 @@ fn rol_a(regs: &mut Regs) {
 fn rol(address: u16, regs: &mut Regs, bus: &mut impl Bus) {
     let m = bus.read_u8(address);
     let new_carry = m & (1 << 7) != 0;
-    let result = m << 1 | regs.flags.contains(Flags::CARRY) as u8;
+    let result = (m << 1) | regs.flags.contains(Flags::CARRY) as u8;
     regs.flags.set(Flags::CARRY, new_carry);
-    regs.flags.set(Flags::ZERO, is_zero(m));
-    regs.flags.set(Flags::NEGATIVE, is_negative(m));
+    regs.flags.set(Flags::ZERO, is_zero(result));
+    regs.flags.set(Flags::NEGATIVE, is_negative(result));
     bus.write_u8(address, result);
 }
 
 fn ror_a(regs: &mut Regs) {
     let new_carry = regs.a & (1 << 0) != 0;
-    regs.a = regs.a >> 1 | (regs.flags.contains(Flags::CARRY) as u8) << 7;
+    regs.a = (regs.a >> 1) | ((regs.flags.contains(Flags::CARRY) as u8) << 7);
     regs.flags.set(Flags::CARRY, new_carry);
     regs.flags.set(Flags::ZERO, is_zero(regs.a));
     regs.flags.set(Flags::NEGATIVE, is_negative(regs.a));
@@ -598,10 +598,10 @@ fn ror_a(regs: &mut Regs) {
 fn ror(address: u16, regs: &mut Regs, bus: &mut impl Bus) {
     let m = bus.read_u8(address);
     let new_carry = m & (1 << 0) != 0;
-    let result = m >> 1 | regs.flags.contains(Flags::CARRY) as u8;
+    let result = (m >> 1) | ((regs.flags.contains(Flags::CARRY) as u8) << 7);
     regs.flags.set(Flags::CARRY, new_carry);
-    regs.flags.set(Flags::ZERO, is_zero(m));
-    regs.flags.set(Flags::NEGATIVE, is_negative(m));
+    regs.flags.set(Flags::ZERO, is_zero(result));
+    regs.flags.set(Flags::NEGATIVE, is_negative(result));
     bus.write_u8(address, result);
 }
 
