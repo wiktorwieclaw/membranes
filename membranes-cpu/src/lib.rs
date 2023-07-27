@@ -162,6 +162,7 @@ impl Cpu {
             (op::Mnemonic::Dec, Some(address)) => dec(address, regs, bus),
             (op::Mnemonic::Dex, None) => dex(regs),
             (op::Mnemonic::Dey, None) => dey(regs),
+            (op::Mnemonic::Eor, Some(address)) => eor(address, regs, bus),
             (op::Mnemonic::Inc, Some(address)) => inc(address, regs, bus),
             (op::Mnemonic::Inx, None) => inx(regs),
             (op::Mnemonic::Iny, None) => iny(regs),
@@ -439,6 +440,13 @@ fn dey(regs: &mut Regs) {
     regs.y = regs.y.wrapping_sub(1);
     regs.flags.set(Flags::ZERO, is_zero(regs.y));
     regs.flags.set(Flags::NEGATIVE, is_negative(regs.y));
+}
+
+fn eor(address: u16, regs: &mut Regs, bus: &mut impl Bus) {
+    let operand = bus.read_u8(address);
+    regs.a ^= operand;
+    regs.flags.set(Flags::ZERO, is_zero(regs.a));
+    regs.flags.set(Flags::NEGATIVE, is_negative(regs.a));
 }
 
 fn inc(address: u16, regs: &mut Regs, bus: &mut impl Bus) {
