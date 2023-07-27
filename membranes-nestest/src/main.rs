@@ -135,8 +135,8 @@ fn format_log(regs: Regs, bus: &mut Bus, effects: Effects) -> String {
                 operand.unwrap()
             ),
         ),
-        op::Mode::IndirectY => (format!("{:02X} {:02X}", hex_0, hex_1), {
-            let operand_address = operand_address.unwrap();
+        op::Mode::IndirectY => (
+            format!("{:02X} {:02X}", hex_0, hex_1),
             format!(
                 "(${:02X}),Y = {:04X} @ {:04X} = {:02X}",
                 hex_1,
@@ -144,10 +144,10 @@ fn format_log(regs: Regs, bus: &mut Bus, effects: Effects) -> String {
                     bus.read_u8(hex_1.into()),
                     bus.read_u8(hex_1.wrapping_add(1).into())
                 ]),
-                operand_address,
+                operand_address.unwrap(),
                 operand.unwrap()
-            )
-        }),
+            ),
+        ),
     };
     let asm = format!("{mnemonic} {argument}");
     format!("{pc:04X}  {hex:9} {asm:31} A:{a:02X} X:{x:02X} Y:{y:02X} P:{flags:02X} SP:{sp:02X}")
