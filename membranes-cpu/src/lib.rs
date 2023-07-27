@@ -179,6 +179,10 @@ impl Cpu {
             (op::Mnemonic::Ldy, Some(address)) => ldy(address, regs, bus),
             (op::Mnemonic::Lsr, Some(address)) => lsr(address, regs, bus),
             (op::Mnemonic::Lsr, None) => lsr_a(regs),
+            (op::Mnemonic::Rol, None) => rol_a(regs),
+            (op::Mnemonic::Rol, Some(address)) => rol(address, regs, bus),
+            (op::Mnemonic::Ror, None) => ror_a(regs),
+            (op::Mnemonic::Ror, Some(address)) => ror(address, regs, bus),
             (op::Mnemonic::Rti, None) => rti(regs, bus),
             (op::Mnemonic::Rts, None) => rts(regs, bus),
             (op::Mnemonic::Sbc, Some(address)) => sbc(address, regs, bus),
@@ -558,6 +562,42 @@ fn plp(regs: &mut Regs, bus: &mut impl Bus) {
     regs.flags = Flags::from_bits_truncate(bus.read_u8(STACK_START.wrapping_add(regs.sp.into())));
     regs.flags.remove(Flags::BREAK_1);
     regs.flags.insert(Flags::BREAK_2);
+}
+
+fn rol_a(regs: &mut Regs) {
+    let new_carry = regs.a & (1 << 7) != 0;
+    regs.a = regs.a << 1 | regs.flags.contains(Flags::CARRY) as u8;
+    regs.flags.set(Flags::CARRY, new_carry);
+    regs.flags.set(Flags::ZERO, is_zero(regs.a));
+    regs.flags.set(Flags::NEGATIVE, is_negative(regs.a));
+}
+
+fn rol(address: u16, regs: &mut Regs, bus: &mut impl Bus) {
+    let m = bus.read_u8(address);
+    let new_carry = m & (1 << 7) != 0;
+    let result = m << 1 | regs.flags.contains(Flags::CARRY) as u8;
+    regs.flags.set(Flags::CARRY, new_carry);
+    regs.flags.set(Flags::ZERO, is_zero(m));
+    regs.flags.set(Flags::NEGATIVE, is_negative(m));
+    bus.write_u8(address, result);
+}
+
+fn ror_a(regs: &mut Regs) {
+    let new_carry = regs.a & (1 << 0) != 0;
+    regs.a = regs.a >> 1 | (regs.flags.contains(Flags::CARRY) as u8) << 7;
+    regs.flags.set(Flags::CARRY, new_carry);
+    regs.flags.set(Flags::ZERO, is_zero(regs.a));
+    regs.flags.set(Flags::NEGATIVE, is_negative(regs.a));
+}
+
+fn ror(address: u16, regs: &mut Regs, bus: &mut impl Bus) {
+    let m = bus.read_u8(address);
+    let new_carry = m & (1 << 0) != 0;
+    let result = m >> 1 | regs.flags.contains(Flags::CARRY) as u8;
+    regs.flags.set(Flags::CARRY, new_carry);
+    regs.flags.set(Flags::ZERO, is_zero(m));
+    regs.flags.set(Flags::NEGATIVE, is_negative(m));
+    bus.write_u8(address, result);
 }
 
 fn rti(regs: &mut Regs, bus: &mut impl Bus) {
