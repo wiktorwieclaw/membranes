@@ -102,7 +102,7 @@ fn format_log(regs: Regs, bus: &mut Bus, effects: Effects) -> String {
         ),
         op::Mode::IndirectX => (
             format!("{:02X} {:02X}", hex[0], hex[1]),
-            format!("(${:02X},X)", hex[1]),
+            format!("(${:02X},X) @ {:02X} = {:04X} = {:02X}", hex[1], hex[1].wrapping_add(x), operand_address.unwrap(), operand.unwrap()),
         ),
         op::Mode::IndirectY => (
             format!("{:02X} {:02X}", hex[0], hex[1]),

@@ -269,15 +269,19 @@ fn operand_address(mode: op::Mode, regs: &mut Regs, bus: &mut impl Bus) -> Optio
         op::Mode::IndirectX => {
             let raw = bus.read_u8(regs.pc);
             regs.pc = regs.pc.wrapping_add(1);
-            let address = raw.wrapping_add(regs.x).into();
-            let address = bus.read_u16_le(address);
-            Some(address)
+            let address = raw.wrapping_add(regs.x);
+            let lo = bus.read_u8(address.into());
+            let hi = bus.read_u8(address.wrapping_add(1).into());
+            Some(u16::from_le_bytes([lo, hi]))
         }
 
         op::Mode::IndirectY => {
             let raw = bus.read_u8(regs.pc);
             regs.pc = regs.pc.wrapping_add(1);
-            let address = bus.read_u16_le(raw.into()).wrapping_add(regs.y.into());
+            let lo = bus.read_u8(raw.into());
+            let hi = bus.read_u8(raw.wrapping_add(1).into());
+            let address = u16::from_le_bytes([lo, hi]);
+            let address = address.wrapping_add(regs.y.into());
             Some(address)
         }
     }
