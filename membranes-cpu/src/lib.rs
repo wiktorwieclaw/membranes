@@ -186,7 +186,11 @@ impl Cpu {
             (op::Mnemonic::Sei, None) => sei(regs),
             (op::Mnemonic::Sta, Some(address)) => sta(address, regs, bus),
             (op::Mnemonic::Stx, Some(address)) => stx(address, regs, bus),
+            (op::Mnemonic::Tax, None) => tax(regs),
+            (op::Mnemonic::Tay, None) => tay(regs),
+            (op::Mnemonic::Tsx, None) => tsx(regs),
             (op::Mnemonic::Txa, None) => txa(regs),
+            (op::Mnemonic::Tya, None) => tya(regs),
             _ => unreachable!("{op:?}"),
         };
 
@@ -593,8 +597,32 @@ fn stx(address: u16, regs: &Regs, bus: &mut impl Bus) {
     bus.write_u8(address, regs.x)
 }
 
+fn tax(regs: &mut Regs) {
+    regs.x = regs.a;
+    regs.flags.set(Flags::ZERO, is_zero(regs.x));
+    regs.flags.set(Flags::NEGATIVE, is_negative(regs.x));
+}
+
+fn tay(regs: &mut Regs) {
+    regs.y = regs.a;
+    regs.flags.set(Flags::ZERO, is_zero(regs.y));
+    regs.flags.set(Flags::NEGATIVE, is_negative(regs.y));
+}
+
+fn tsx(regs: &mut Regs) {
+    regs.y = regs.sp;
+    regs.flags.set(Flags::ZERO, is_zero(regs.x));
+    regs.flags.set(Flags::NEGATIVE, is_negative(regs.x));
+}
+
 fn txa(regs: &mut Regs) {
     regs.a = regs.x;
+    regs.flags.set(Flags::ZERO, is_zero(regs.a));
+    regs.flags.set(Flags::NEGATIVE, is_negative(regs.a));
+}
+
+fn tya(regs: &mut Regs) {
+    regs.a = regs.y;
     regs.flags.set(Flags::ZERO, is_zero(regs.a));
     regs.flags.set(Flags::NEGATIVE, is_negative(regs.a));
 }
