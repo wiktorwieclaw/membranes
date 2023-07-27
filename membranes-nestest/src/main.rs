@@ -18,7 +18,6 @@ fn main() -> Result<(), Box<dyn Error>> {
         let effects = nes.next_op();
 
         let log = format_log(regs, &mut nes.bus, effects);
-
         // FIXME: remove split when PPU is implemented
         let expected = expected.split_at(73).0;
         assert_eq!(log, expected, "line {}", i + 1);
@@ -82,10 +81,10 @@ fn format_log(regs: Regs, bus: &mut Bus, effects: Effects) -> String {
         ),
         op::Mode::Absolute => (
             format!("{:02X} {:02X} {:02X}", hex[0], hex[1], hex[2]),
-            if matches!(mnemonic, op::Mnemonic::Sty | op::Mnemonic::Stx) {
-                format!("${:02X}{:02X} = {:02X}", hex[2], hex[1], operand.unwrap())
-            } else {
+            if matches!(mnemonic, op::Mnemonic::Jmp | op::Mnemonic::Jsr) {
                 format!("${:02X}{:02X}", hex[2], hex[1])
+            } else {
+                format!("${:02X}{:02X} = {:02X}", hex[2], hex[1], operand.unwrap())
             }
         ),
         op::Mode::AbsoluteX => (

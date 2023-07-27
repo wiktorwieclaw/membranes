@@ -479,7 +479,7 @@ fn jmp(address: u16, regs: &mut Regs) {
 }
 
 fn jsr(address: u16, regs: &mut Regs, bus: &mut impl Bus) {
-    bus.write_u16_be(
+    bus.write_u16_le(
         STACK_START.wrapping_add(regs.sp.wrapping_sub(1).into()),
         regs.pc.wrapping_sub(1),
     );
@@ -559,7 +559,7 @@ fn plp(regs: &mut Regs, bus: &mut impl Bus) {
 
 fn rts(regs: &mut Regs, bus: &mut impl Bus) {
     regs.pc = bus
-        .read_u16_be(STACK_START.wrapping_add(regs.sp.wrapping_add(1).into()))
+        .read_u16_le(STACK_START.wrapping_add(regs.sp.wrapping_add(1).into()))
         .wrapping_add(1);
     regs.sp = regs.sp.wrapping_add(2);
 }
