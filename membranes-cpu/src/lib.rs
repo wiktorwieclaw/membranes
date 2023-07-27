@@ -190,6 +190,7 @@ impl Cpu {
             (op::Mnemonic::Tay, None) => tay(regs),
             (op::Mnemonic::Tsx, None) => tsx(regs),
             (op::Mnemonic::Txa, None) => txa(regs),
+            (op::Mnemonic::Txs, None) => txs(regs),
             (op::Mnemonic::Tya, None) => tya(regs),
             _ => unreachable!("{op:?}"),
         };
@@ -619,6 +620,10 @@ fn txa(regs: &mut Regs) {
     regs.a = regs.x;
     regs.flags.set(Flags::ZERO, is_zero(regs.a));
     regs.flags.set(Flags::NEGATIVE, is_negative(regs.a));
+}
+
+fn txs(regs: &mut Regs) {
+    regs.sp = regs.x;
 }
 
 fn tya(regs: &mut Regs) {
