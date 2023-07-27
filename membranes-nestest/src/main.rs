@@ -41,6 +41,7 @@ fn format_log(regs: Regs, bus: &mut Bus, effects: Effects) -> String {
     let Effects {
         op,
         operand_address,
+        operand,
         ..
     } = effects;
 
@@ -69,11 +70,7 @@ fn format_log(regs: Regs, bus: &mut Bus, effects: Effects) -> String {
         ),
         op::Mode::ZeroPage => (
             format!("{:02X} {:02X}", hex[0], hex[1]),
-            format!(
-                "${:02X} = {:02X}",
-                hex[1],
-                bus.read_u8(operand_address.unwrap())
-            ),
+            format!("${:02X} = {:02X}", hex[1], operand.unwrap()),
         ),
         op::Mode::ZeroPageX => (
             format!("{:02X} {:02X}", hex[0], hex[1]),

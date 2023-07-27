@@ -101,6 +101,7 @@ pub struct Cpu {
 pub struct Effects {
     pub op: Op,
     pub operand_address: Option<u16>,
+    pub operand: Option<u8>,
     pub cycles: u8,
 }
 
@@ -135,92 +136,53 @@ impl Cpu {
         let (mnemonic, mode) = (op.mnemonic(), op.mode());
 
         let operand_address = operand_address(mode, regs, bus);
+        let operand = operand_address.map(|a| bus.read_u8(a));
         match (mnemonic, operand_address) {
             (op::Mnemonic::Adc, Some(address)) => adc(address, regs, bus),
-            (op::Mnemonic::Adc, None) => unreachable!(),
             (op::Mnemonic::And, Some(address)) => and(address, regs, bus),
-            (op::Mnemonic::And, None) => unreachable!(),
             (op::Mnemonic::Asl, Some(address)) => asl(address, regs, bus),
             (op::Mnemonic::Asl, None) => asl_a(regs),
             (op::Mnemonic::Bcc, Some(address)) => bcc(address, regs, bus),
-            (op::Mnemonic::Bcc, None) => unreachable!(),
             (op::Mnemonic::Bcs, Some(address)) => bcs(address, regs, bus),
-            (op::Mnemonic::Bcs, None) => unreachable!(),
             (op::Mnemonic::Beq, Some(address)) => beq(address, regs, bus),
-            (op::Mnemonic::Beq, None) => unreachable!(),
             (op::Mnemonic::Bit, Some(address)) => bit(address, regs, bus),
-            (op::Mnemonic::Bit, None) => unreachable!(),
             (op::Mnemonic::Bne, Some(address)) => bne(address, regs, bus),
-            (op::Mnemonic::Bne, None) => unreachable!(),
             (op::Mnemonic::Bpl, Some(address)) => bpl(address, regs, bus),
-            (op::Mnemonic::Bpl, None) => unreachable!(),
-            (op::Mnemonic::Brk, Some(_)) => unreachable!(),
-            (op::Mnemonic::Brk, None) => {
-                regs.flags.set(Flags::B_1, true);
-                return Effects {
-                    op,
-                    operand_address,
-                    cycles,
-                };
-            }
-            (op::Mnemonic::Clc, Some(_)) => unreachable!(),
+            (op::Mnemonic::Brk, None) => brk(regs),
             (op::Mnemonic::Clc, None) => clc(regs),
-            (op::Mnemonic::Cld, Some(_)) => unreachable!(),
             (op::Mnemonic::Cld, None) => cld(regs),
-            (op::Mnemonic::Cli, Some(_)) => unreachable!(),
             (op::Mnemonic::Cli, None) => cli(regs),
-            (op::Mnemonic::Clv, Some(_)) => unreachable!(),
             (op::Mnemonic::Clv, None) => clv(regs),
             (op::Mnemonic::Cmp, Some(address)) => cmp(address, regs, bus),
-            (op::Mnemonic::Cmp, None) => unreachable!(),
             (op::Mnemonic::Cpx, Some(address)) => cpx(address, regs, bus),
-            (op::Mnemonic::Cpx, None) => unreachable!(),
             (op::Mnemonic::Cpy, Some(address)) => cpy(address, regs, bus),
-            (op::Mnemonic::Cpy, None) => unreachable!(),
             (op::Mnemonic::Dec, Some(address)) => dec(address, regs, bus),
-            (op::Mnemonic::Dec, None) => unreachable!(),
-            (op::Mnemonic::Dex, Some(_)) => unreachable!(),
             (op::Mnemonic::Dex, None) => dex(regs),
-            (op::Mnemonic::Dey, Some(_)) => unreachable!(),
             (op::Mnemonic::Dey, None) => dey(regs),
             (op::Mnemonic::Inc, Some(address)) => inc(address, regs, bus),
-            (op::Mnemonic::Inc, None) => unreachable!(),
-            (op::Mnemonic::Inx, Some(_)) => unreachable!(),
             (op::Mnemonic::Inx, None) => inx(regs),
-            (op::Mnemonic::Iny, Some(_)) => unreachable!(),
             (op::Mnemonic::Iny, None) => iny(regs),
             (op::Mnemonic::Jmp, Some(address)) => jmp(address, regs),
-            (op::Mnemonic::Jmp, None) => unreachable!(),
             (op::Mnemonic::Jsr, Some(address)) => jsr(address, regs, bus),
-            (op::Mnemonic::Jsr, None) => unreachable!(),
-            (op::Mnemonic::Nop, Some(_)) => unreachable!(),
             (op::Mnemonic::Nop, None) => nop(),
             (op::Mnemonic::Lda, Some(address)) => lda(address, regs, bus),
-            (op::Mnemonic::Lda, None) => unreachable!(),
             (op::Mnemonic::Ldx, Some(address)) => ldx(address, regs, bus),
-            (op::Mnemonic::Ldx, None) => unreachable!(),
             (op::Mnemonic::Ldy, Some(address)) => ldy(address, regs, bus),
-            (op::Mnemonic::Ldy, None) => unreachable!(),
             (op::Mnemonic::Lsr, Some(address)) => lsr(address, regs, bus),
             (op::Mnemonic::Lsr, None) => lsr_a(regs),
-            (op::Mnemonic::Rts, Some(_)) => unreachable!(),
             (op::Mnemonic::Rts, None) => rts(regs, bus),
             (op::Mnemonic::Sbc, Some(address)) => sbc(address, regs, bus),
-            (op::Mnemonic::Sbc, None) => unreachable!(),
-            (op::Mnemonic::Sec, Some(_)) => unreachable!(),
             (op::Mnemonic::Sec, None) => sec(regs),
             (op::Mnemonic::Sta, Some(address)) => sta(address, regs, bus),
-            (op::Mnemonic::Sta, None) => unreachable!(),
             (op::Mnemonic::Stx, Some(address)) => stx(address, regs, bus),
-            (op::Mnemonic::Stx, None) => unreachable!(),
-            (op::Mnemonic::Txa, Some(_)) => unreachable!(),
             (op::Mnemonic::Txa, None) => txa(regs),
-            _ => todo!("{op:?}"),
+            _ => unreachable!("{op:?}"),
         };
 
         Effects {
             op,
             operand_address,
+            operand,
             cycles,
         }
     }
@@ -382,6 +344,10 @@ fn bpl(address: u16, regs: &mut Regs, bus: &mut impl Bus) {
         let offset = bus.read_u8(address) as i8;
         regs.pc = regs.pc.wrapping_add_signed(offset.into());
     }
+}
+
+fn brk(regs: &mut Regs) {
+    regs.flags.set(Flags::B_1, true);
 }
 
 fn clc(regs: &mut Regs) {
