@@ -36,8 +36,8 @@ bitflags! {
         const ZERO = 0b0000_0010;
         const INTERRUPT_DISABLE = 0b0000_0100;
         const DECIMAL = 0b0000_1000;
-        const B_1 = 0b0001_0000;
-        const B_2 = 0b0010_0000;
+        const BREAK_1 = 0b0001_0000;
+        const BREAK_2 = 0b0010_0000;
         /// Signed overflow
         const OVERFLOW = 0b0100_0000;
         const NEGATIVE = 0b1000_0000;
@@ -110,7 +110,7 @@ impl Cpu {
         Self {
             regs: Regs {
                 sp: 0xFD,
-                flags: Flags::INTERRUPT_DISABLE | Flags::B_2,
+                flags: Flags::INTERRUPT_DISABLE | Flags::BREAK_2,
                 ..Default::default()
             },
         }
@@ -146,6 +146,7 @@ impl Cpu {
             (op::Mnemonic::Bcs, Some(address)) => bcs(address, regs, bus),
             (op::Mnemonic::Beq, Some(address)) => beq(address, regs, bus),
             (op::Mnemonic::Bit, Some(address)) => bit(address, regs, bus),
+            (op::Mnemonic::Bmi, Some(address)) => bmi(address, regs, bus),
             (op::Mnemonic::Bne, Some(address)) => bne(address, regs, bus),
             (op::Mnemonic::Bpl, Some(address)) => bpl(address, regs, bus),
             (op::Mnemonic::Brk, None) => brk(regs),
@@ -337,8 +338,15 @@ fn bit(address: u16, regs: &mut Regs, bus: &mut impl Bus) {
     let m = bus.read_u8(address);
     let result = m & regs.a;
     regs.flags.set(Flags::ZERO, result == 0);
-    regs.flags.set(Flags::OVERFLOW, result & (1 << 6) != 0);
-    regs.flags.set(Flags::NEGATIVE, result & (1 << 7) != 0);
+    regs.flags.set(Flags::OVERFLOW, m & (1 << 6) != 0);
+    regs.flags.set(Flags::NEGATIVE, m & (1 << 7) != 0);
+}
+
+fn bmi(address: u16, regs: &mut Regs, bus: &mut impl Bus) {
+    if regs.flags.contains(Flags::NEGATIVE) {
+        let offset = bus.read_u8(address) as i8;
+        regs.pc = regs.pc.wrapping_add_signed(offset.into());
+    }
 }
 
 fn bne(address: u16, regs: &mut Regs, bus: &mut impl Bus) {
@@ -356,7 +364,7 @@ fn bpl(address: u16, regs: &mut Regs, bus: &mut impl Bus) {
 }
 
 fn brk(regs: &mut Regs) {
-    regs.flags.set(Flags::B_1, true);
+    regs.flags.set(Flags::BREAK_1, true);
 }
 
 fn bvc(address: u16, regs: &mut Regs, bus: &mut impl Bus) {
@@ -504,8 +512,11 @@ fn lsr(address: u16, regs: &mut Regs, bus: &mut impl Bus) {
 
 fn nop() {}
 
-fn ora(_address: u16, _regs: &mut Regs, _bus: &mut impl Bus) {
-    todo!()
+fn ora(address: u16, regs: &mut Regs, bus: &mut impl Bus) {
+    let operand = bus.read_u8(address);
+    regs.a |= operand;
+    regs.flags.set(Flags::ZERO, is_zero(regs.a));
+    regs.flags.set(Flags::NEGATIVE, is_negative(regs.a));
 }
 
 fn pha(regs: &mut Regs, bus: &mut impl Bus) {
@@ -514,7 +525,8 @@ fn pha(regs: &mut Regs, bus: &mut impl Bus) {
 }
 
 fn php(regs: &mut Regs, bus: &mut impl Bus) {
-    bus.write_u8(STACK_START.wrapping_add(regs.sp.into()), regs.flags.bits());
+    let flags = regs.flags.union(Flags::BREAK_1 | Flags::BREAK_2);
+    bus.write_u8(STACK_START.wrapping_add(regs.sp.into()), flags.bits());
     regs.sp = regs.sp.wrapping_sub(1);
 }
 
@@ -528,6 +540,8 @@ fn pla(regs: &mut Regs, bus: &mut impl Bus) {
 fn plp(regs: &mut Regs, bus: &mut impl Bus) {
     regs.sp = regs.sp.wrapping_add(1);
     regs.flags = Flags::from_bits_truncate(bus.read_u8(STACK_START.wrapping_add(regs.sp.into())));
+    regs.flags.remove(Flags::BREAK_1);
+    regs.flags.insert(Flags::BREAK_2);
 }
 
 fn rts(regs: &mut Regs, bus: &mut impl Bus) {
