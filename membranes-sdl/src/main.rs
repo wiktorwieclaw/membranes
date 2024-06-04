@@ -42,7 +42,7 @@ fn main() {
         }
 
         let effects = nes.cpu.next(&mut nes.bus);
-        if let membranes::cpu::op::Mnemonic::Brk = effects.op.mnemonic() {
+        if let membranes::cpu::op::Mnemonic::Brk = effects.op.mnemonic {
             break;
         }
     }

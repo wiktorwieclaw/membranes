@@ -3,8 +3,9 @@ use wasm_bindgen::prelude::*;
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[wasm_bindgen]
 pub struct Op {
-    mnemonic: Mnemonic,
-    mode: Mode,
+    pub mnemonic: Mnemonic,
+    pub mode: Mode,
+    pub cycles: u8,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, strum::Display)]
@@ -161,7 +162,7 @@ impl Mode {
 }
 
 impl Op {
-    pub fn parse(opcode: u8) -> Option<(Self, u8)> {
+    pub fn parse(opcode: u8) -> Option<Self> {
         let (mnemonic, mode, cycles) = match opcode {
             0x69 => (Mnemonic::Adc, Mode::Immediate, 2),
             0x65 => (Mnemonic::Adc, Mode::ZeroPage, 3),
@@ -316,14 +317,10 @@ impl Op {
             0x98 => (Mnemonic::Tya, Mode::Implied, 2),
             _ => return None,
         };
-        Some((Self { mnemonic, mode }, cycles))
-    }
-
-    pub fn mnemonic(&self) -> Mnemonic {
-        self.mnemonic
-    }
-
-    pub fn mode(&self) -> Mode {
-        self.mode
+        Some(Self {
+            mnemonic,
+            mode,
+            cycles,
+        })
     }
 }

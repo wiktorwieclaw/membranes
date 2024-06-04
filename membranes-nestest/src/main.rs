@@ -38,12 +38,10 @@ fn format_log(regs: Regs, bus: &mut Bus, effects: Effects) -> String {
     } = regs;
     let flags = flags.bits();
 
-    let Effects {
-        op, operand_info, ..
-    } = effects;
+    let Effects { op, operand, .. } = effects;
 
-    let mnemonic = op.mnemonic();
-    let mode = op.mode();
+    let mnemonic = op.mnemonic;
+    let mode = op.mode;
 
     let hex_0 = bus.read_u8(pc);
     let hex_1 = bus.read_u8(pc.wrapping_add(1));
@@ -53,8 +51,8 @@ fn format_log(regs: Regs, bus: &mut Bus, effects: Effects) -> String {
         op::Mode::Implied => (format!("{:02X}", hex_0), String::new()),
         op::Mode::Accumulator => (format!("{:02X}", hex_0), String::from("A")),
         op::Mode::Relative => {
-            let operand_info = operand_info.unwrap();
-            let offset = bus.read_u8(operand_info.address) as i8;
+            let operand = operand.unwrap();
+            let offset = bus.read_u8(operand.effective_address) as i8;
             let address = pc.wrapping_add(2).wrapping_add_signed(offset.into());
             (
                 format!("{:02X} {:02X}", hex_0, hex_1),
@@ -66,87 +64,95 @@ fn format_log(regs: Regs, bus: &mut Bus, effects: Effects) -> String {
             format!("#${:02X}", hex_1),
         ),
         op::Mode::ZeroPage => {
-            let operand_info = operand_info.unwrap();
+            let operand = operand.unwrap();
+            let value = bus.read_u8(operand.effective_address);
             let hex = format!("{:02X} {:02X}", hex_0, hex_1);
-            let argument = format!("${:02X} = {:02X}", hex_1, operand_info.value);
+            let argument = format!("${:02X} = {:02X}", hex_1, value);
             (hex, argument)
         }
         op::Mode::ZeroPageX => {
-            let operand_info = operand_info.unwrap();
+            let operand = operand.unwrap();
+            let value = bus.read_u8(operand.effective_address);
             (
                 format!("{:02X} {:02X}", hex_0, hex_1),
                 format!(
                     "${:02X},X @ {:02X} = {:02X}",
-                    operand_info.raw_address, operand_info.address, operand_info.value
+                    operand.raw_address, operand.effective_address, value
                 ),
             )
         }
         op::Mode::ZeroPageY => {
-            let operand_info = operand_info.unwrap();
+            let operand = operand.unwrap();
+            let value = bus.read_u8(operand.effective_address);
             (
                 format!("{:02X} {:02X}", hex_0, hex_1),
                 format!(
                     "${:02X},Y @ {:02X} = {:02X}",
-                    operand_info.raw_address, operand_info.address, operand_info.value
+                    operand.raw_address, operand.effective_address, value
                 ),
             )
         }
         op::Mode::Absolute => {
-            let operand_info = operand_info.unwrap();
+            let operand = operand.unwrap();
+            let value = bus.read_u8(operand.effective_address);
             (
                 format!("{:02X} {:02X} {:02X}", hex_0, hex_1, hex_2),
                 if matches!(mnemonic, op::Mnemonic::Jmp | op::Mnemonic::Jsr) {
                     format!("${:02X}{:02X}", hex_2, hex_1)
                 } else {
-                    format!("${:02X}{:02X} = {:02X}", hex_2, hex_1, operand_info.value)
+                    format!("${:02X}{:02X} = {:02X}", hex_2, hex_1, value)
                 },
             )
         }
         op::Mode::AbsoluteX => {
-            let operand_info = operand_info.unwrap();
+            let operand = operand.unwrap();
+            let value = bus.read_u8(operand.effective_address);
             (
                 format!("{:02X} {:02X} {:02X}", hex_0, hex_1, hex_2),
                 format!(
                     "${:02X}{:02X},X @ {:04X} = {:02X}",
-                    hex_2, hex_1, operand_info.address, operand_info.value
+                    hex_2, hex_1, operand.effective_address, value
                 ),
             )
         }
         op::Mode::AbsoluteY => {
-            let operand_info = operand_info.unwrap();
+            let operand = operand.unwrap();
+            let value = bus.read_u8(operand.effective_address);
             (
                 format!("{:02X} {:02X} {:02X}", hex_0, hex_1, hex_2),
                 format!(
                     "${:02X}{:02X},Y @ {:04X} = {:02X}",
-                    hex_2, hex_1, operand_info.address, operand_info.value
+                    hex_2, hex_1, operand.effective_address, value
                 ),
             )
         }
         op::Mode::Indirect => {
-            let operand_info = operand_info.unwrap();
+            let operand = operand.unwrap();
             (
                 format!("{:02X} {:02X} {:02X}", hex_0, hex_1, hex_2),
                 format!(
                     "(${:02X}{:02X}) = {:04X}",
-                    hex_2, hex_1, operand_info.address
+                    hex_2, hex_1, operand.effective_address
                 ),
             )
         }
         op::Mode::IndirectX => {
-            let operand_info = operand_info.unwrap();
+            let operand = operand.unwrap();
+            let value = bus.read_u8(operand.effective_address);
             (
                 format!("{:02X} {:02X}", hex_0, hex_1),
                 format!(
                     "(${:02X},X) @ {:02X} = {:04X} = {:02X}",
                     hex_1,
                     hex_1.wrapping_add(x),
-                    operand_info.address,
-                    operand_info.value
+                    operand.effective_address,
+                    value
                 ),
             )
         }
         op::Mode::IndirectY => {
-            let operand_info = operand_info.unwrap();
+            let operand = operand.unwrap();
+            let value = bus.read_u8(operand.effective_address);
             (
                 format!("{:02X} {:02X}", hex_0, hex_1),
                 format!(
@@ -156,8 +162,8 @@ fn format_log(regs: Regs, bus: &mut Bus, effects: Effects) -> String {
                         bus.read_u8(hex_1.into()),
                         bus.read_u8(hex_1.wrapping_add(1).into())
                     ]),
-                    operand_info.address,
-                    operand_info.value
+                    operand.effective_address,
+                    value
                 ),
             )
         }
