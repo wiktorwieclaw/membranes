@@ -12,7 +12,7 @@ fn accumulator_zero(regs: Regs) {
     let mut cpu = Cpu::from_regs(regs);
     let mut bus = [0x4A];
 
-    cpu.next(&mut bus);
+    cpu.tick(&mut bus);
 
     prop_assert_eq!(
         cpu.regs(),
@@ -37,7 +37,7 @@ fn accumulator_carry(regs: Regs) {
     let mut cpu = Cpu::from_regs(regs);
     let mut bus = [0x4A];
 
-    cpu.next(&mut bus);
+    cpu.tick(&mut bus);
 
     prop_assert_eq!(
         cpu.regs(),
@@ -59,7 +59,7 @@ fn memory_carry(regs: Regs) {
     let mut cpu = Cpu::from_regs(regs);
     let mut bus = [0x46, 0x02, 0b0100_0001];
 
-    cpu.next(&mut bus);
+    cpu.tick(&mut bus);
 
     prop_assert_eq!(
         cpu.regs(),

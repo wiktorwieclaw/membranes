@@ -16,7 +16,7 @@ fn test(regs: Regs) {
     bus[0x0001] = 0x03;
     bus[0x0002] = 0x00;
 
-    cpu.next(&mut bus);
+    cpu.tick(&mut bus);
 
     prop_assert_eq!(
         cpu.regs(),

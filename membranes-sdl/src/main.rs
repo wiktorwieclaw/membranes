@@ -41,7 +41,7 @@ fn main() {
             canvas.present();
         }
 
-        let effects = nes.cpu.next(&mut nes.bus);
+        let effects = nes.cpu.tick(&mut nes.bus);
         if let membranes::cpu::op::Mnemonic::Brk = effects.op.mnemonic {
             break;
         }

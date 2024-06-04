@@ -13,7 +13,7 @@ fn signed_wrapping_into_zero(regs: Regs) {
     let mut cpu = Cpu::from_regs(regs);
     let mut bus = [0x69, 0x01];
 
-    cpu.next(&mut bus);
+    cpu.tick(&mut bus);
 
     prop_assert_eq!(
         cpu.regs(),
@@ -39,7 +39,7 @@ fn signed_wrapping_into_positive(regs: Regs) {
     let mut cpu = Cpu::from_regs(regs);
     let mut bus = [0x69, 0x02];
 
-    cpu.next(&mut bus);
+    cpu.tick(&mut bus);
 
     prop_assert_eq!(
         cpu.regs(),
@@ -66,7 +66,7 @@ fn unsigned_overflow_into_zero(regs: Regs) {
     let mut cpu = Cpu::from_regs(regs);
     let mut bus = [0x69, 0x80];
 
-    cpu.next(&mut bus);
+    cpu.tick(&mut bus);
 
     prop_assert_eq!(
         cpu.regs(),
@@ -92,7 +92,7 @@ fn unsigned_overflow_into_positive(regs: Regs) {
     let mut cpu = Cpu::from_regs(regs);
     let mut bus = [0x69, 0x81];
 
-    cpu.next(&mut bus);
+    cpu.tick(&mut bus);
 
     prop_assert_eq!(
         cpu.regs(),
@@ -118,7 +118,7 @@ fn unsigned_overflow_into_negative(regs: Regs) {
     let mut cpu = Cpu::from_regs(regs);
     let mut bus = [0x69, 0x50];
 
-    cpu.next(&mut bus);
+    cpu.tick(&mut bus);
 
     prop_assert_eq!(
         cpu.regs(),

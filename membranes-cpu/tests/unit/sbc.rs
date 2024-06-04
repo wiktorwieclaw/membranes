@@ -13,7 +13,7 @@ fn overflow_into_zero(regs: Regs) {
     let mut cpu = Cpu::from_regs(regs);
     let mut bus = [0xE9, 0x01];
 
-    cpu.next(&mut bus);
+    cpu.tick(&mut bus);
 
     prop_assert_eq!(
         cpu.regs(),
@@ -40,7 +40,7 @@ fn negative(regs: Regs) {
     let mut cpu = Cpu::from_regs(regs);
     let mut bus = [0xE9, 0x00];
 
-    cpu.next(&mut bus);
+    cpu.tick(&mut bus);
 
     prop_assert_eq!(
         cpu.regs(),

@@ -162,7 +162,7 @@ impl Mode {
 }
 
 impl Op {
-    pub fn parse(opcode: u8) -> Option<Self> {
+    pub fn decode(opcode: u8) -> Option<Self> {
         let (mnemonic, mode, cycles) = match opcode {
             0x69 => (Mnemonic::Adc, Mode::Immediate, 2),
             0x65 => (Mnemonic::Adc, Mode::ZeroPage, 3),

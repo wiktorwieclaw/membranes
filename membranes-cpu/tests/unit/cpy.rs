@@ -12,7 +12,7 @@ fn greater(regs: Regs) {
     let mut cpu = Cpu::from_regs(regs);
     let mut bus = [0xC0, 0x01];
 
-    cpu.next(&mut bus);
+    cpu.tick(&mut bus);
 
     prop_assert_eq!(
         cpu.regs(),
@@ -37,7 +37,7 @@ fn equal(regs: Regs) {
     let mut cpu = Cpu::from_regs(regs);
     let mut bus = [0xC0, 0x01];
 
-    cpu.next(&mut bus);
+    cpu.tick(&mut bus);
 
     prop_assert_eq!(
         cpu.regs(),
@@ -62,7 +62,7 @@ fn lesser(regs: Regs) {
     let mut cpu = Cpu::from_regs(regs);
     let mut bus = [0xC0, 0x02];
 
-    cpu.next(&mut bus);
+    cpu.tick(&mut bus);
 
     prop_assert_eq!(
         cpu.regs(),

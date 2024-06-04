@@ -43,8 +43,8 @@ impl Nes {
         Ok(())
     }
 
-    pub fn next_op(&mut self) -> cpu::Effects {
-        self.cpu.next(&mut self.bus)
+    pub fn tick(&mut self) -> cpu::Effects {
+        self.cpu.tick(&mut self.bus)
     }
 
     pub fn ram(&mut self) -> *const u8 {

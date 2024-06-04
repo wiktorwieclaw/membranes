@@ -13,7 +13,7 @@ fn zero(regs: Regs) {
     let mut cpu = Cpu::from_regs(regs);
     let mut bus = [0x8A];
 
-    cpu.next(&mut bus);
+    cpu.tick(&mut bus);
 
     prop_assert_eq!(
         cpu.regs(),
@@ -36,7 +36,7 @@ fn positive(regs: Regs, #[strategy(positive_byte())] x: u8) {
     let mut cpu = Cpu::from_regs(regs);
     let mut bus = [0x8A];
 
-    cpu.next(&mut bus);
+    cpu.tick(&mut bus);
 
     prop_assert_eq!(
         cpu.regs(),
@@ -59,7 +59,7 @@ fn negative(regs: Regs, #[strategy(negative_byte())] x: u8) {
     let mut cpu = Cpu::from_regs(regs);
     let mut bus = [0x8A];
 
-    cpu.next(&mut bus);
+    cpu.tick(&mut bus);
 
     prop_assert_eq!(
         cpu.regs(),

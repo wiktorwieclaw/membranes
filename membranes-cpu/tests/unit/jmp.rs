@@ -13,7 +13,7 @@ fn test(regs: Regs) {
     bus[0xFFFC] = 0xFC;
     bus[0xFFFD] = 0xBA;
 
-    cpu.next(&mut bus);
+    cpu.tick(&mut bus);
 
     prop_assert_eq!(cpu.regs(), Regs { pc: 0xBAFC, ..regs });
 }

@@ -106,6 +106,7 @@ pub struct Effects {
 #[derive(Clone, Copy)]
 #[wasm_bindgen]
 pub struct Operand {
+    pub value: u8,
     pub effective_address: u16,
     pub indirect_address: Option<u16>,
     pub raw_address: u16,
@@ -136,9 +137,9 @@ impl Cpu {
         self.regs
     }
 
-    pub fn next(&mut self, bus: &mut impl Bus) -> Effects {
-        let opcode = self.read_op(bus);
-        let op = Op::parse(opcode).unwrap_or_else(|| panic!("Unsupported opcode: {opcode:x}"));
+    pub fn tick(&mut self, bus: &mut impl Bus) -> Effects {
+        let opcode = self.read_opcode(bus);
+        let op = Op::decode(opcode).unwrap_or_else(|| panic!("Unsupported opcode: {opcode:x}"));
         let operand = self.read_operand(op.mode, bus);
         let regs = &mut self.regs;
         match (op.mnemonic, operand.map(|o| o.effective_address)) {
@@ -208,7 +209,7 @@ impl Cpu {
         Effects { op, operand }
     }
 
-    fn read_op(&mut self, bus: &mut impl Bus) -> u8 {
+    fn read_opcode(&mut self, bus: &mut impl Bus) -> u8 {
         let opcode = bus.read_u8(self.regs.pc);
         self.regs.pc = self.regs.pc.wrapping_add(1);
         opcode
@@ -298,6 +299,7 @@ impl Cpu {
             }
         }
         .map(|(raw, indirect, effective)| Operand {
+            value: bus.read_u8(effective),
             effective_address: effective,
             indirect_address: indirect,
             raw_address: raw,

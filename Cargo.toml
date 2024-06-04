@@ -6,5 +6,4 @@ members = [
     "membranes-gamepad",
     "membranes-rom",
     "membranes-sdl",
-    "membranes-nestest"
 ]

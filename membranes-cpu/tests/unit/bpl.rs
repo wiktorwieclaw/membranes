@@ -12,7 +12,7 @@ fn no_negative(regs: Regs) {
     let mut cpu = Cpu::from_regs(regs);
     let mut bus = [0x10, 0x05];
 
-    cpu.next(&mut bus);
+    cpu.tick(&mut bus);
 
     prop_assert_eq!(cpu.regs(), Regs { pc: 0x07, ..regs });
 }
@@ -27,7 +27,7 @@ fn no_negative_2(regs: Regs) {
     let mut cpu = Cpu::from_regs(regs);
     let mut bus = [0x10, 0xFF];
 
-    cpu.next(&mut bus);
+    cpu.tick(&mut bus);
 
     prop_assert_eq!(cpu.regs(), Regs { pc: 0x01, ..regs });
 }
@@ -42,7 +42,7 @@ fn negative(regs: Regs) {
     let mut cpu = Cpu::from_regs(regs);
     let mut bus = [0x10, 0x05];
 
-    cpu.next(&mut bus);
+    cpu.tick(&mut bus);
 
     prop_assert_eq!(cpu.regs(), Regs { pc: 0x02, ..regs });
 }

@@ -161,13 +161,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "membranes-nestest"
-version = "0.1.0"
-dependencies = [
- "membranes",
-]
-
-[[package]]
 name = "membranes-rom"
 version = "0.1.0"
 dependencies = [

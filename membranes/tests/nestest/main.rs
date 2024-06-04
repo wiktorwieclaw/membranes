@@ -1,5 +1,3 @@
-use std::error::Error;
-
 use membranes::{
     cpu::{op, Bus as _, Effects, Regs},
     Bus, Nes,
@@ -8,23 +6,21 @@ use membranes::{
 const NESTEST_ROM: &[u8] = include_bytes!("nestest.nes");
 const NESTEST_LOG: &str = include_str!("nestest.log");
 
-fn main() -> Result<(), Box<dyn Error>> {
+#[test]
+fn nestest() {
     let mut nes = Nes::new();
-    nes.load(NESTEST_ROM)?;
+    nes.load(NESTEST_ROM).unwrap();
     nes.cpu.regs.pc = 0xC000;
 
     for (i, expected) in NESTEST_LOG.lines().enumerate() {
         let regs = nes.cpu.regs;
-        let effects = nes.next_op();
-
+        let effects = nes.tick();
         let log = format_log(regs, &mut nes.bus, effects);
         // FIXME: remove split when PPU is implemented
         let expected = expected.split_at(73).0;
         println!("{log}");
         assert_eq!(log, expected, "line {}", i + 1);
     }
-
-    Ok(())
 }
 
 fn format_log(regs: Regs, bus: &mut Bus, effects: Effects) -> String {
@@ -65,64 +61,58 @@ fn format_log(regs: Regs, bus: &mut Bus, effects: Effects) -> String {
         ),
         op::Mode::ZeroPage => {
             let operand = operand.unwrap();
-            let value = bus.read_u8(operand.effective_address);
             let hex = format!("{:02X} {:02X}", hex_0, hex_1);
-            let argument = format!("${:02X} = {:02X}", hex_1, value);
+            let argument = format!("${:02X} = {:02X}", hex_1, operand.value);
             (hex, argument)
         }
         op::Mode::ZeroPageX => {
             let operand = operand.unwrap();
-            let value = bus.read_u8(operand.effective_address);
             (
                 format!("{:02X} {:02X}", hex_0, hex_1),
                 format!(
                     "${:02X},X @ {:02X} = {:02X}",
-                    operand.raw_address, operand.effective_address, value
+                    operand.raw_address, operand.effective_address, operand.value
                 ),
             )
         }
         op::Mode::ZeroPageY => {
             let operand = operand.unwrap();
-            let value = bus.read_u8(operand.effective_address);
             (
                 format!("{:02X} {:02X}", hex_0, hex_1),
                 format!(
                     "${:02X},Y @ {:02X} = {:02X}",
-                    operand.raw_address, operand.effective_address, value
+                    operand.raw_address, operand.effective_address, operand.value
                 ),
             )
         }
         op::Mode::Absolute => {
             let operand = operand.unwrap();
-            let value = bus.read_u8(operand.effective_address);
             (
                 format!("{:02X} {:02X} {:02X}", hex_0, hex_1, hex_2),
                 if matches!(mnemonic, op::Mnemonic::Jmp | op::Mnemonic::Jsr) {
                     format!("${:02X}{:02X}", hex_2, hex_1)
                 } else {
-                    format!("${:02X}{:02X} = {:02X}", hex_2, hex_1, value)
+                    format!("${:02X}{:02X} = {:02X}", hex_2, hex_1, operand.value)
                 },
             )
         }
         op::Mode::AbsoluteX => {
             let operand = operand.unwrap();
-            let value = bus.read_u8(operand.effective_address);
             (
                 format!("{:02X} {:02X} {:02X}", hex_0, hex_1, hex_2),
                 format!(
                     "${:02X}{:02X},X @ {:04X} = {:02X}",
-                    hex_2, hex_1, operand.effective_address, value
+                    hex_2, hex_1, operand.effective_address, operand.value
                 ),
             )
         }
         op::Mode::AbsoluteY => {
             let operand = operand.unwrap();
-            let value = bus.read_u8(operand.effective_address);
             (
                 format!("{:02X} {:02X} {:02X}", hex_0, hex_1, hex_2),
                 format!(
                     "${:02X}{:02X},Y @ {:04X} = {:02X}",
-                    hex_2, hex_1, operand.effective_address, value
+                    hex_2, hex_1, operand.effective_address, operand.value
                 ),
             )
         }
@@ -138,7 +128,6 @@ fn format_log(regs: Regs, bus: &mut Bus, effects: Effects) -> String {
         }
         op::Mode::IndirectX => {
             let operand = operand.unwrap();
-            let value = bus.read_u8(operand.effective_address);
             (
                 format!("{:02X} {:02X}", hex_0, hex_1),
                 format!(
@@ -146,13 +135,12 @@ fn format_log(regs: Regs, bus: &mut Bus, effects: Effects) -> String {
                     hex_1,
                     hex_1.wrapping_add(x),
                     operand.effective_address,
-                    value
+                    operand.value
                 ),
             )
         }
         op::Mode::IndirectY => {
             let operand = operand.unwrap();
-            let value = bus.read_u8(operand.effective_address);
             (
                 format!("{:02X} {:02X}", hex_0, hex_1),
                 format!(
@@ -163,7 +151,7 @@ fn format_log(regs: Regs, bus: &mut Bus, effects: Effects) -> String {
                         bus.read_u8(hex_1.wrapping_add(1).into())
                     ]),
                     operand.effective_address,
-                    value
+                    operand.value
                 ),
             )
         }
